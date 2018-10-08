@@ -1,0 +1,42 @@
+{
+  "name": "nicoMylist",
+  "version": "0.7.1",
+  "description": "ニコニコ動画のマイリスト拡張",
+  "manifest_version": 2,
+  
+  "browser_action": {
+    "default_title": "nicoMylist"
+  },
+  
+  "content_scripts": [ {
+      "js": [ "js/jquery-3.3.1.min.js", "content_scripts.js", "js/nicoApi.js" ],
+      "css": [ "nicoMylist.css" ],
+      "matches": [ 
+        "http://*.nicovideo.jp/watch/sm*",
+        "https://www.youtube.com/watch*"
+      ]
+   } ],
+   
+  "background": {
+    "scripts": [
+      "background.js", "js/SheetApi.js"
+    ],
+    "persistent": false
+  },
+   
+  "permissions": [
+    "identity",
+    "storage",
+    "tabs"
+  ],
+  "options_ui": {
+    "page": "option.html",
+    "open_in_tab": true
+  },
+  
+  "oauth2": {
+    "client_id": "645932863093-aboaes2a3r2mhtd3ga2s96tj692gqrbu.apps.googleusercontent.com",
+    "scopes":["https://www.googleapis.com/auth/spreadsheets"]
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvD0SzFVEHjrl6KQ3+j1auSvqpZG73Oe0fiBhMD6gRhLRcNkKomxoPQAQfteoHC0iMcxyluh726rxD47QI0dG1eYuveZODZrsYGATITmJ634L3IPeIp5VBEUeIcqhUGmjOg17loRKOmMLr7fAoX10h5DfiPnVRrRT7E5AIvyxOnBbm8SGDnK2uz5uO7pmjFpTgsJ3MhQrOOJwLL8x19QWNV3xAjiF1GrpC0iwOJnLPDlesZEuvzRQiYhRCuWxR0zIIlKWJmeGCVW2ytPrR6rAPgI6v/HJcm9k09C9VC7Nrj+LzqNe4IDhGypM9S/aerBKlQi10VoEQ4o2P9x9Ps4W0wIDAQAB"
+}
