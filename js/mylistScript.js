@@ -16,11 +16,17 @@ function nextVideo() {
 	if (ur) chrome.tabs.update(playTabId, {url: ur}, function(tab) {
 	});
 }
-
+var ttt = new Date();;
+function runtime(msg) {
+	var nt = new Date();
+	console.log(msg + (nt - ttt));
+	ttt = nt;
+}
 
 $(function() {
 	getSheetId()
 	.then((sheetId) => {
+		runtime("strage");
 		// スプレッドシートIDが設定されてなかったらoptionページへ
 		if (!sheetId) {
 			location.href = '/option.html?status=empty';
@@ -31,6 +37,7 @@ $(function() {
 		return api.GetRange("list", "A:A", true);
 	})
 	.then((obj) => {
+		runtime("A列取得");
 		if (obj.error) {
 			location.href = '/option.html?status=error'+obj.error.code;
 			throw new Error();
@@ -61,6 +68,7 @@ $(function() {
 		return api.GetRange("list", `${startRow}:${endRow}`);
 	})
 	.then((obj) => {
+		runtime("全行取得");
 		var list = [];
 		$.each(obj.values, function(i, one) {
 			var video = {
@@ -75,9 +83,6 @@ $(function() {
 		$.each(list, function(i, one) {
 				str += `
 					<li data-id="${i}">
-						<div class="play-here">
-							<button value="${i}">ここから連続再生</button>
-						</div>
 						<table name="video-table" border="1">
 							<tr class="title-row">
 								<td rowspan="3" width="32px">
@@ -91,6 +96,9 @@ $(function() {
 									</div>
 								</td>
 								<td>
+									<div class="play-here">
+										<button value="${i}">ここから連続再生</button>
+									</div>
 									<div class="title">
 										<a href="${one.url}">${one.title}</a>
 									</div>
@@ -120,7 +128,7 @@ $(function() {
 		$('.list').html(str);
 	})
 	.then(() => {
-		
+		runtime("list作成");
 		$('.play-here').each(function() {
 			$(this).find('button').on('click', function() {
 				nowIndex = $(this).val();
@@ -130,14 +138,14 @@ $(function() {
 				});
 			});
 		});
-		
-		// $('name=video-table').each(function() {
-		// 	var but = $(this).parent().find('.play-here');
-		// 	$(this).hover(
-		// 		function(){ but.css('visibility', 'visible'); },
-		// 		function(){ but.css('visibility', 'hidden'); }
-		// 	);
-		// });
+		$('[name=video-table]').each(function() {
+			var but = $(this).find('.play-here');
+			$(this).hover(
+				function(){ but.css('visibility', 'visible'); },
+				function(){ but.css('visibility', 'hidden'); }
+			);
+		});
+		runtime("event");
 	})
 	.catch(reason => {
 		console.log("error");
