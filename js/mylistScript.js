@@ -26,9 +26,9 @@ function runtime(msg) {
 $(function() {
 	getSheetId()
 	.then((sheetId) => {
-		runtime("strage");
-		// スプレッドシートIDが設定されてなかったらoptionページへ
+		runtime("strage読込");
 		if (!sheetId) {
+			// シートIDが未設定
 			location.href = '/option.html?status=empty';
 			throw new Error();
 		}
@@ -39,9 +39,11 @@ $(function() {
 	.then((obj) => {
 		runtime("A列取得");
 		if (obj.error) {
+			// シートへのアクセス失敗
 			location.href = '/option.html?status=error'+obj.error.code;
 			throw new Error();
 		}
+		// urlからパラメータ取得
 		var params = [];
 		if (location.search != "") {
 			$.each(location.search.substring(1).split("&"), function(i, one) {
