@@ -1,12 +1,5 @@
 var playTabId;
 var nowIndex;
-function getSheetId() {
-	return new Promise(function(resolve, reject) {
-		chrome.storage.local.get(["sheetId"], function(value) {
-			resolve(value.sheetId);
-		});
-	});
-}
 function getListUrl(index) {
 	return  $(`ul > li:eq(${index})`).find('a:eq(0)').attr('href');
 }
@@ -24,62 +17,42 @@ function runtime(msg) {
 }
 
 $(function() {
-	getSheetId()
-	.then((sheetId) => {
+	console.log("start");
+	getLocalStorage("sheetId")
+	.then((value) => {
 		runtime("strage読込");
-		if (!sheetId) {
+		if (!value.sheetId) {
 			// シートIDが未設定
 			location.href = '/option.html?status=empty';
 			throw new Error();
 		}
-		api.bookId = sheetId;
-		// 先頭列取得
-		return api.GetRange("list", "A:A", true);
+		api.bookId = value.sheetId;
+		return api.GetRange("list", "A:H");
 	})
 	.then((obj) => {
-		runtime("A列取得");
+		runtime("データ取得");
 		if (obj.error) {
 			// シートへのアクセス失敗
 			location.href = '/option.html?status=error'+obj.error.code;
 			throw new Error();
 		}
 		// urlからパラメータ取得
-		var params = [];
-		if (location.search != "") {
-			$.each(location.search.substring(1).split("&"), function(i, one) {
-				let p = one.split("=");
-				params[p[0]] = decodeURI(p[1]);
-			});
-		} else {
+		params = getUrlParams();
+		if (!params["list"]) {
 			params["list"] = "def";
 		}
 		console.log("look: " + params["list"]);
 		
-		// 目的のフォルダの開始から終了を検索(sortされてること前提)
-		var startRow, endRow;
-		$.each(obj.values[0], function(i, dir) {
-			if (!startRow && dir == params["list"]) {
-				startRow = i + 1;
-			}
-			if (startRow && dir != params["list"]) {
-				return false;
-			}
-			endRow = i + 1;
-		});
-		// 目的のフォルダの行全て取得(sortされてること前提)
-		return api.GetRange("list", `${startRow}:${endRow}`);
-	})
-	.then((obj) => {
-		runtime("全行取得");
 		var list = [];
 		$.each(obj.values, function(i, one) {
-			var video = {
-				id:one[0], index:one[1], url:one[2], title:one[3],
-				thumbnail:one[4], tag:one[5], time:one[6], instm:one[7]
-			};
-			list.push(video);
+			if (one[0] == params["list"]) {
+				var video = {
+					folder:one[0], index:one[1], url:one[2], title:one[3],
+					thumbnail:one[4], tag:one[5], time:one[6], instm:one[7]
+				};
+				list.push(video);
+			}
 		});
-		console.log(list);
 		
 		var str = "";
 		$.each(list, function(i, one) {

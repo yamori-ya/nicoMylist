@@ -4,36 +4,32 @@ chrome.runtime.onMessage.addListener(
 		
 		switch(request.id) {
 			case "nicoMylist":
-				chrome.storage.local.get(["sheetId"], function(value) {
+				getLocalStorage("sheetId")
+				.then((value) => {
 					api.bookId = value.sheetId;
-					api.AppendData("list", request.videoInfo)
-					.then((obj) => {
-						if (obj.error) {
-							sendResponse({result: "faild"});
-							throw new Error();
-						}
-						return api.Sort();
-					})
-					.then(() => {
-						if (obj.error) {
-							sendResponse({result: "faild"});
-							throw new Error();
-						}
-						sendResponse({result: "success"});
-					})
-					.catch(reason => {
-						
-					});
+					return api.AppendData("list", request.videoInfo);
+				})
+				.then((obj) => {
+					if (obj.error) {
+						sendResponse({result: "faild"});
+						throw new Error();
+					}
+					sendResponse({result: "success"});
+				})
+				.catch(reason => {
+					
 				});
 				break;
 				
 			case "option_save":
-				chrome.storage.local.set(request.save, function() {
+				setLocalStorage(request.save)
+				.then(() => {
 					sendResponse({message: "保存成功"});
 				});
 				break;
 			case "option_load":
-				chrome.storage.local.get(["sheetId","info","list"], function(value) {
+				getLocalStorage(["sheetId","info","list"])
+				.then((value) => {
 					console.dir(value);
 					sendResponse({val:value});
 				});

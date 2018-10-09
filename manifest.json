@@ -19,7 +19,7 @@
    
   "background": {
     "scripts": [
-      "background.js", "js/SheetApi.js"
+      "background.js", "js/SheetApi.js", "js/function.js"
     ],
     "persistent": false
   },
