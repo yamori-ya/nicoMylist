@@ -1,6 +1,6 @@
 {
   "name": "nicoMylist",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "ニコニコ動画のマイリスト拡張",
   "manifest_version": 2,
   
@@ -12,7 +12,8 @@
       "js": [ "js/jquery-3.3.1.min.js", "content_scripts.js", "js/nicoApi.js" ],
       "css": [ "nicoMylist.css" ],
       "matches": [ 
-        "http://*.nicovideo.jp/watch/sm*",
+        "http://*.nicovideo.jp/watch/*",
+        "https://*.nicovideo.jp/watch/*",
         "https://www.youtube.com/watch*"
       ]
    } ],
