@@ -44,7 +44,12 @@ chrome.runtime.onMessage.addListener(
 					// });
 				});
 				break;
-			
+			case "is_player_tab":
+				getLocalStorage("player_tab_id").then((value) => {
+					sendResponse({isPlayerTab:value.player_tab_id == sender.tab.id});
+				});
+				break;
+				
 			case "test":
 				break
 		}
