@@ -28,7 +28,7 @@ class VideoInfo
 	static getVideoXml(videoId) {
 		return new Promise(function(resolve, reject) {
 			$.ajax({
-				url: "http://ext.nicovideo.jp/api/getthumbinfo/" + videoId,
+				url: "//ext.nicovideo.jp/api/getthumbinfo/" + videoId,
 				type: 'GET',
 				dataType: 'xml',
 				timeout: 1000,

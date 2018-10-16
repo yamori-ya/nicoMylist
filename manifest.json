@@ -9,7 +9,7 @@
   },
   
   "content_scripts": [ {
-      "js": [ "js/jquery-3.3.1.min.js", "content_scripts.js", "js/nicoApi.js" ],
+      "js": [ "js/jquery-3.3.1.min.js", "content_scripts.js", "js/nicoApi.js", "js/function.js" ],
       "css": [ "nicoMylist.css" ],
       "matches": [ 
         "http://*.nicovideo.jp/watch/*",

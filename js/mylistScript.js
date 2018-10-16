@@ -67,7 +67,9 @@ $(function() {
 								</td>
 								<td class="thumbnail-col" rowspan="3" width="130px">
 									<div class="img-area">
-										<img class="thumbnail" width="130px" src="${one.thumbnail}">
+										<a target="_brank" href="${one.url}">
+											<img class="thumbnail" width="130px" src="${one.thumbnail}">
+										</a>
 									</div>
 								</td>
 								<td>
@@ -75,7 +77,7 @@ $(function() {
 										<button value="${i}">ここから連続再生</button>
 									</div>
 									<div class="title">
-										<a href="${one.url}">${one.title}</a>
+										<a target="_brank" href="${one.url}">${one.title}</a>
 									</div>
 								</td>
 								<td rowspan="3" width="32px">
@@ -108,8 +110,10 @@ $(function() {
 			$(this).find('button').on('click', function() {
 				nowIndex = $(this).val();
 				var ur = getListUrl(nowIndex);
+				setLocalStorage({nico_full_screen:false});
 				chrome.tabs.create({url:ur, active:true}, function(tab) {
 					playTabId = tab.id;
+					
 				});
 			});
 		});
@@ -134,5 +138,4 @@ $(function() {
 			return true;
 		}
 	);
-	
 });

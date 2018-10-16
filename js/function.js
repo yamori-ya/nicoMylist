@@ -1,4 +1,15 @@
 /**
+ * 現在のtabを取得
+ */
+function getCurrentTab() {
+	return new Promise(function(resolve, reject) {
+		chrome.tabs.getCurrent(function(tab) {
+			resolve(tab);
+		});
+	});
+}
+
+/**
  * urlからパラメータ取得
  */
 function getUrlParams() {
@@ -16,7 +27,6 @@ function getUrlParams() {
  * local strage から値を取得
  */
 function getLocalStorage(getNames) {
-	console.log('test');
 	return new Promise(function(resolve, reject) {
 		chrome.storage.local.get(getNames, function(value) {
 			resolve(value);
@@ -37,20 +47,20 @@ function getSyncStorage(getNames) {
 /**
  * local strage へ値を保存
  */
-function setLocalStorage(setParamMap) {
+function setLocalStorage(setParamMap, callback) {
 	return new Promise(function(resolve, reject) {
-		chrome.storage.local.set(setNames, function() {
-			sendResponse({message: "保存成功"});
+		chrome.storage.local.set(setParamMap, function() {
+			callback({message: "保存成功"});
 		});
 	});
 }
 /**
  * sync strage へ値を保存
  */
-function setSyncStorage(setParamMap) {
+function setSyncStorage(setParamMap, callback) {
 	return new Promise(function(resolve, reject) {
-		chrome.storage.sync.set(setNames, function() {
-			sendResponse({message: "保存成功"});
+		chrome.storage.sync.set(setParamMap, function() {
+			callback({message: "保存成功"});
 		});
 	});
 }
