@@ -113,7 +113,7 @@ $(function() {
 				setLocalStorage({nico_full_screen:false});
 				chrome.tabs.create({url:ur, active:true}, function(tab) {
 					playTabId = tab.id;
-					
+					setLocalStorage({player_tab_id:playTabId});
 				});
 			});
 		});

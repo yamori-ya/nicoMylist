@@ -20,7 +20,7 @@
    
   "background": {
     "scripts": [
-      "background.js", "js/SheetApi.js", "js/function.js"
+       "js/function.js", "background.js", "js/SheetApi.js"
     ],
     "persistent": false
   },

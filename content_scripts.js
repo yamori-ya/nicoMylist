@@ -1,4 +1,4 @@
-var video, currentTabId;
+
 function justmeetScroll() {
 	// 動画が見えるところまでスクロール
 	var metaRow = $(".HeaderContainer-row").eq(1);
@@ -51,31 +51,28 @@ $(function() {
 			"player_tab_id",
 			"nico_full_screen",
 			//"youtube_full_screen",
+			"just_scroll",
 			"auto_play",
 		];
-		
-		chrome.runtime.sendMessage({id:"is_player_tab"}, (response) => {
-			currentTabId = response.isPlayerTab;
-			getLocalStorage(GET_VALUE)
-			.then((value) => {
-				if (value.player_tab_id == currentTabId) {
-					if (value.nico_full_screen) {
-						// 前回動画終了時にフルスクリーンだったら今動画もフルスクリーンに
-						$('.EnableFullScreenButton').first().click();
-					}
-					else {
-						justmeetScroll();
-					}
+		var task1 = sendMessage({id:"get_current_tab"});
+		var task2 = getLocalStorage(GET_VALUE);
+		Promise.all([task1, task2]).then((values) => {
+			var currentTabId = values[0].tab.id;
+			var storage = values[1];
+			if (storage.player_tab_id == currentTabId) {
+				if (storage.nico_full_screen) {
+					// 前回動画終了時にフルスクリーンだったら今動画もフルスクリーンに
+					$('.EnableFullScreenButton').first().click();
 				}
 				else {
-					if (value.auto_play) {
-						console.log("auto_play");
-						justmeetScroll();
-						// 再生ボタンを押して自動再生
-						$('.PlayerPlayButton').first().click();
-					}
+					justmeetScroll();
 				}
-			});
+				$('.PlayerPlayButton').first().click();
+			}
+			else {
+				if (storage.just_scroll) justmeetScroll();
+				if (storage.auto_play) $('.PlayerPlayButton').first().click();
+			}
 		});
 		
 	}
@@ -86,10 +83,10 @@ $(function() {
 	
 	// ニコニコは1秒くらい待たないとvideoが正常に取得できない
 	setTimeout(function() {
-		video = document.getElementsByTagName('video')[0];
+		var video = document.getElementsByTagName('video')[0];
 		video.onended = function(){
 			console.log("video ended");
-			setLocalStorage({nico_full_screen:$('body').hasClass('is-fullscreen')}, ()=>{});
+			setLocalStorage({nico_full_screen:$('body').hasClass('is-fullscreen')});
 			chrome.runtime.sendMessage(
 				{id:"video_ended"},
 				(response) => {}
