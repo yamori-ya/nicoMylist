@@ -75,6 +75,7 @@ $(function() {
 			}
 		});
 		
+		
 	}
 	
 	if (document.domain == "www.youtube.com") {
@@ -92,6 +93,10 @@ $(function() {
 				(response) => {}
 			);
 		}
+		
+		$('#UadPlayer').on('click', function() {
+			$(video.paused ? '.PlayerPlayButton' : '.PlayerPauseButton').first().click();
+		});
 	}, 1000);
 	
 });
