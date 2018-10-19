@@ -1,10 +1,18 @@
 $(function() {
 	
-	chrome.runtime.sendMessage({id:"option_load"}, function(response) {
-		console.dir(response);
-		$('#sheetId').val(response.val.sheetId);
-		$('#info').val(response.val.info);
-		$('#list').val(response.val.list);
+	// load
+	getLocalStorage([
+		"sheetId",
+		"info",
+		"list",
+		"auto_play",
+		"just_scroll",
+	]).then((values) => {
+		$('#sheetId').val(values.sheetId);
+		$('#info').val(values.info);
+		$('#list').val(values.list);
+		$('#autoPlay').prop('checked', values.auto_play);
+		$('#justmeetScroll').prop('checked', values.just_scroll);
 	});
 	
 	var params = [];
@@ -24,25 +32,15 @@ $(function() {
 	
 	$('#save').click(function() {
 		console.log("保存");
-		var map = {
+		setLocalStorage({
 			sheetId:$('#sheetId').val(),
 			info:$('#info').val(),
-			list:$('#list').val()
-		};
-		chrome.runtime.sendMessage({id:"option_save", save:map}, function(response) {
-			console.log(response);
+			list:$('#list').val(),
+			auto_play:$('#autoPlay').prop('checked'),
+			just_scroll:$('#justmeetScroll').prop('checked')
 		});
 	});
 	
-	
-	chrome.storage.local.get(["auto_play"], function(value) {
-		$('#autoPlay').prop('checked', value.auto_play);
-	});
-	$('#autoPlay').on('change', function() {
-		chrome.storage.local.set({auto_play:$('#autoPlay').prop('checked')}, function() {
-		
-		});
-	});
 	
 	// $('#add_').click(function() {
 	// 

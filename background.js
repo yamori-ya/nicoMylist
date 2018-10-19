@@ -19,19 +19,6 @@ chrome.runtime.onMessage.addListener(
 			});
 			break;
 
-		case "option_save":
-			setLocalStorage(request.save)
-			.then(() => {
-				sendResponse({message: "保存成功"});
-			});
-			break;
-		case "option_load":
-			getLocalStorage(["sheetId","info","list"])
-			.then((value) => {
-				console.dir(value);
-				sendResponse({val:value});
-			});
-			break;
 		case "create_book":
 			api.bookId = "";
 			api.CreateBook()
