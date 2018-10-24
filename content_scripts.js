@@ -1,4 +1,4 @@
-
+var video;
 function justmeetScroll() {
 	// 動画が見えるところまでスクロール
 	var metaRow = $(".HeaderContainer-row").eq(1);
@@ -53,6 +53,7 @@ $(function() {
 			//"youtube_full_screen",
 			"just_scroll",
 			"auto_play",
+			"screen_click",
 		];
 		var task1 = sendMessage({id:"get_current_tab"});
 		var task2 = getLocalStorage(GET_VALUE);
@@ -73,6 +74,11 @@ $(function() {
 				if (storage.just_scroll) justmeetScroll();
 				if (storage.auto_play) $('.PlayerPlayButton').first().click();
 			}
+			if (storage.screen_click) {
+				$('#UadPlayer').on('click', function() {
+					$(video.paused ? '.PlayerPlayButton' : '.PlayerPauseButton').first().click();
+				});
+			}
 		});
 		
 		
@@ -84,7 +90,7 @@ $(function() {
 	
 	// ニコニコは1秒くらい待たないとvideoが正常に取得できない
 	setTimeout(function() {
-		var video = document.getElementsByTagName('video')[0];
+		video = document.getElementsByTagName('video')[0];
 		video.onended = function(){
 			console.log("video ended");
 			setLocalStorage({nico_full_screen:$('body').hasClass('is-fullscreen')});
@@ -94,9 +100,6 @@ $(function() {
 			);
 		}
 		
-		$('#UadPlayer').on('click', function() {
-			$(video.paused ? '.PlayerPlayButton' : '.PlayerPauseButton').first().click();
-		});
 	}, 1000);
 	
 });
