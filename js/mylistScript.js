@@ -1,13 +1,7 @@
 var playTabId;
 var nowIndex;
 function getListUrl(index) {
-	return  $(`ul > li:eq(${index})`).find('a:eq(0)').attr('href');
-}
-function nextVideo() {
-	var ur = getListUrl(++nowIndex);
-	console.log("next url: " + ur);
-	if (ur) chrome.tabs.update(playTabId, {url: ur}, function(tab) {
-	});
+	return  $(`ul > #list-${index}`).find('a:eq(0)').attr('href');
 }
 
 function loadSheet(sheetId) {
@@ -25,12 +19,12 @@ function loadSheet(sheetId) {
 				thumbnail:one[4], tag:one[5], time:one[6], instm:one[7]
 			});
 		});
-		obj = {
+		cache_data = {
 			folder: obj.valueRanges[0].values.flat(),
 			data: list
 		};
-		setLocalStorage({cache:obj});
-		createList(obj, params["list"]);
+		setLocalStorage({cache:cache_data});
+		createList(cache_data, params["list"]);
 	});
 }
 
@@ -47,12 +41,12 @@ function createList(obj, name) {
 		if (one.folder != name)
 			return true;
 		str += `
-			<li data-id="${i}">
+			<li data-id="${i}" id="list-${i}">
 				<table name="video-table" border="1">
 					<tr class="title-row">
 						<td rowspan="3" width="32px">
 							<div class="">
-								<input type="checkbox" id="check-${one.line}" class="check_css"/>
+								<input type="checkbox" value="${one.line}" class="check_css"/>
 							</div>
 						</td>
 						<td class="thumbnail-col" rowspan="3" width="130px">
@@ -104,6 +98,7 @@ function createList(obj, name) {
 	$('.play-here').each(function() {
 		$(this).find('button').on('click', function() {
 			nowIndex = $(this).val();
+			console.log("button index: " + nowIndex);
 			var ur = getListUrl(nowIndex);
 			setLocalStorage({nico_full_screen:false});
 			chrome.tabs.create({url:ur, active:true}, function(tab) {
@@ -120,9 +115,6 @@ function createList(obj, name) {
 		);
 	});
 }
-
-
-
 
 
 $(function() {
@@ -165,11 +157,25 @@ $(function() {
 	$('#option').click(() => {
 		location.href = '/option.html';
 	});
+	$('#delete').click(() => {
+		var checked_video = [];
+		$("input[type='checkbox']").filter(":checked").each((i,ele) => {
+			checked_video.push(Number($(ele).val())+1);
+		});
+		console.log("delete line index: " + checked_video);
+		getLocalStorage(["sheetId", "list_sheet_id"]).then((value) => {
+			api.bookId = value.sheetId;
+			api.DeleteLine(value.list_sheet_id, checked_video);
+		});
+	});
+	
 	
 	chrome.runtime.onMessage.addListener(
 		function(request, sender, sendResponse) {
 			if (request.id == "video_ended" && playTabId == sender.tab.id) {
-				nextVideo();
+				var ur = getListUrl(++nowIndex);
+				console.log("next url: " + ur);
+				if (ur) chrome.tabs.update(playTabId, {url: ur}, function(tab) {});
 			}
 			return true;
 		}

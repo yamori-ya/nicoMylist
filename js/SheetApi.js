@@ -45,6 +45,32 @@ class SheetApi
 			}
 		);
 	}
+	DeleteLine(sheetId, delLines) {
+		var req = "";
+		delLines.sort((a,b)=>a-b);
+		var range = [];
+		var start = delLines[0], ago;
+		delLines.forEach((v) => {
+			if (ago && Math.abs(ago-v) != 1) {
+				range.push([start-1, ago]);
+				start = v;
+			}
+			ago = v;
+		});
+		range.push([start-1, ago]);
+		range.reverse().forEach((v) => {
+			req += `{"deleteDimension":{"range":{"sheetId":${sheetId},"dimension":"ROWS","startIndex":${v[0]},"endIndex":${v[1]}}}},`;
+		});
+		
+		return this.Run(
+			`:batchUpdate`,
+			{
+				method: 'POST',
+				async: true,
+				body: `{"requests": [${req}]}`
+			}
+		);
+	}
 	// update() {
 	// 	return this.Run(
 	// 		SheetApi.API_URL + this.bookId_ +':batchUpdate',
@@ -75,6 +101,7 @@ class SheetApi
 						'Content-Type': 'application/json; charset=UTF-8'
 					}
 					request.contentType = 'json';
+					console.log("request.body:" + request.body);
 					return fetch(url, request)
 					.then( (response) => { return response.json(); } )
 					.then( (data) => { console.dir(data); return resolve(data); } );
