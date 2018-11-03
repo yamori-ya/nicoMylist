@@ -22,9 +22,13 @@ class SheetApi
 			{ method: 'GET', async: true }
 		);
 	}
-	GetRange(sheet, range, rotat = false) {
+	GetRange(ranges) {
+		var rs = [];
+		for (var i in ranges) {
+			rs.push(`ranges=${ranges[i]}`);
+		}
 		return this.Run(
-			`/values/${sheet}!${range}` + (rotat ? '?majorDimension=COLUMNS' : ''),
+			`/values:batchGet?${rs.join("&")}`,
 			{ method: 'GET', async: true }
 		);
 	}

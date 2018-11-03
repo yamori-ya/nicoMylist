@@ -9,6 +9,31 @@ function nextVideo() {
 	if (ur) chrome.tabs.update(playTabId, {url: ur}, function(tab) {
 	});
 }
+
+function loadSheet(sheetId) {
+	api.bookId = sheetId;
+	api.GetRange(["info!A:A", "list!A:H"]).then((obj) => {
+		runtime("データ取得");
+		if (obj.error) { // シートへのアクセス失敗
+			location.href = '/option.html?status=error'+obj.error.code;
+			throw new Error();
+		}
+		var list = [];
+		$.each(obj.valueRanges[1].values, (i, one) => {
+			list.push({
+				line:i, folder:one[0], index:one[1], url:one[2], title:one[3],
+				thumbnail:one[4], tag:one[5], time:one[6], instm:one[7]
+			});
+		});
+		obj = {
+			folder: obj.valueRanges[0].values.flat(),
+			data: list
+		};
+		setLocalStorage({cache:obj});
+		createList(obj, params["list"]);
+	});
+}
+
 var ttt = new Date();;
 function runtime(msg) {
 	var nt = new Date();
@@ -16,56 +41,66 @@ function runtime(msg) {
 	ttt = nt;
 }
 
-function createList(list) {
+function createList(obj, name) {
 	var str = "";
-	$.each(list, function(i, one) {
-			str += `
-				<li data-id="${i}">
-					<table name="video-table" border="1">
-						<tr class="title-row">
-							<td rowspan="3" width="32px">
-								<div class="check">
-									<input type="checkbox" id="">
-								</div>
-							</td>
-							<td class="thumbnail-col" rowspan="3" width="130px">
-								<div class="img-area">
-									<a target="_brank" href="${one.url}">
-										<img class="thumbnail" width="130px" src="${one.thumbnail}">
-									</a>
-								</div>
-							</td>
-							<td>
-								<div class="play-here">
-									<button value="${i}">ここから連続再生</button>
-								</div>
-								<div class="title">
-									<a target="_brank" href="${one.url}">${one.title}</a>
-								</div>
-							</td>
-							<td rowspan="3" width="32px">
-								<span id="menuButton" class="handle">
-									<span></span>
-								</span>
-							</td>
-						</tr>
-						<tr class="tags-row">
-							<td>
-								<div>${one.tag}</div>
-							</td>
-						</tr>
-						<tr class="comment-row">
-							<td class="comment-col">
-								<div class="comment">${one.comment}</div>
-							</td>
-						</tr>
-					</table>
-					<br>
-					<br>
-				</li>
-			`;
+	$.each(obj.data, function(i, one) {
+		if (one.folder != name)
+			return true;
+		str += `
+			<li data-id="${i}">
+				<table name="video-table" border="1">
+					<tr class="title-row">
+						<td rowspan="3" width="32px">
+							<div class="">
+								<input type="checkbox" id="check-${one.line}" class="check_css"/>
+							</div>
+						</td>
+						<td class="thumbnail-col" rowspan="3" width="130px">
+							<div class="img-area">
+								<a target="_brank" href="${one.url}">
+									<img class="thumbnail" width="130px" src="${one.thumbnail}">
+								</a>
+							</div>
+						</td>
+						<td>
+							<div class="play-here">
+								<button value="${i}">ここから連続再生</button>
+							</div>
+							<div class="title">
+								<a target="_brank" href="${one.url}">${one.title}</a>
+							</div>
+						</td>
+						<td rowspan="3" width="32px">
+							<span id="menuButton" class="handle">
+								<span></span>
+							</span>
+						</td>
+					</tr>
+					<tr class="tags-row">
+						<td>
+							<div>${one.tag}</div>
+						</td>
+					</tr>
+					<tr class="comment-row">
+						<td class="comment-col">
+							<div class="comment">${one.comment}</div>
+						</td>
+					</tr>
+				</table>
+				<br>
+				<br>
+			</li>
+		`;
 	});
 	$('.list').html(str);
+	
+	str = "";
+	$.each(obj.folder, (i, f) => {
+		var name = decodeURI(f);
+		str += `<li><a href="/mylist.html?list=${name}">${name}</a></li>`;
+	})
+	$('#folder-list').html(str);
+	
 	$('.play-here').each(function() {
 		$(this).find('button').on('click', function() {
 			nowIndex = $(this).val();
@@ -91,58 +126,45 @@ function createList(list) {
 
 
 $(function() {
-	console.log("start");
+	params = getUrlParams();
+	if (!params["list"]) {
+		params["list"] = "def";
+	}
+	console.log("look: " + params["list"]);
+	
 	
 	getLocalStorage(["cache", "sheetId", "always_load"])
 	.then((value) => {
 		if (value.cache && !value.always_load) {
 			console.log("load cache");
-			createList(value.cache);
+			createList(value.cache, params["list"]);
 		}
 		else {
 			console.log("load sheet");
-			if (!value.sheetId) {
-				// シートIDが未設定
+			if (!value.sheetId) { // シートIDが未設定
 				location.href = '/option.html?status=empty';
 				throw new Error();
 			}
-			api.bookId = value.sheetId;
-			api.GetRange("list", "A:H").then((obj) => {
-				runtime("データ取得");
-				if (obj.error) {
-					// シートへのアクセス失敗
-					location.href = '/option.html?status=error'+obj.error.code;
-					throw new Error();
-				}
-				// urlからパラメータ取得
-				params = getUrlParams();
-				if (!params["list"]) {
-					params["list"] = "def";
-				}
-				console.log("look: " + params["list"]);
-				
-				var list = [];
-				$.each(obj.values, function(i, one) {
-					if (one[0] == params["list"]) {
-						var video = {
-							folder:one[0], index:one[1], url:one[2], title:one[3],
-							thumbnail:one[4], tag:one[5], time:one[6], instm:one[7]
-						};
-						list.push(video);
-					}
-				});
-				setLocalStorage({cache:list});
-				createList(list);
-			})
+			loadSheet(value.sheetId);
 		}
 	})
 	.catch(reason => {
 		console.log("error");
 	});
 	
-	$('#menu').click(function() {
+	$('#menu').click(() => {
 		$('.menu').first().slideToggle();
 	})
+	$('#reload').click(() => {
+		$('folder-list').empty();
+		$('list').empty();
+		getLocalStorage(["sheetId"]).then((value) => {
+			loadSheet(value.sheetId);
+		});
+	});
+	$('#option').click(() => {
+		location.href = '/option.html';
+	});
 	
 	chrome.runtime.onMessage.addListener(
 		function(request, sender, sendResponse) {

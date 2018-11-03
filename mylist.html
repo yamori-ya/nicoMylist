@@ -12,18 +12,40 @@
 <!-- <link rel="stylesheet" href="sortable-theme-dark.css" />
 <script type="text/javascript" src="Sortable.min.js"></script> -->
 <!-- <script src="Sortable.min.js"></script> -->
-
+<style>
+.head-but{
+	float:right;
+	padding-right: 15px;
+	padding-top: 3px;
+}
+.menu {
+	display: none;
+	padding-left: 20px;
+}
+</style>
 </head>
 
 <body>
 	
 	<header id="header-fixed">
-		<div>
+		<span style="float:left;">
 			aaa
-		</div>
+		</span>
+		<span class="head-but" style="float:right;" >
+			<button id="menu">設定</button>
+			<ul class="menu">
+				<li><button id="reload">更新</button></li>
+				<li><button id="edit">編集</button></li>
+				<li><button id="option">オプション</button></li>
+			</ul>
+		</span>
+		
 	</header>
 	
-	<div id="main-body">
+	<div id="folder">
+		<ul id="folder-list"></ul>
+	</div>
+	<div id="mylist">
 		<ul class="list"></ul>
 	</div>
 

@@ -42,8 +42,9 @@ class VideoInfo
 			MM = (now.getMonth() + 1),
 			dd = now.getDate(),
 			hh = now.getHours(),
-			mm = now.getMinutes();
-		return `${yyyy}/${MM}/${dd} ${hh}:${mm}`;
+			mm = now.getMinutes(),
+			sc = now.getSeconds();
+		return `${yyyy}/${MM}/${dd} ${hh}:${mm}:${sc}`;
 	}
 }
 
