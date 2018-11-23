@@ -4,13 +4,13 @@ function getListUrl(index) {
 	return  $(`ul > #list-${index}`).find('a:eq(0)').attr('href');
 }
 
-function loadSheet(sheetId) {
-	api.bookId = sheetId;
+function loadBook(bookId) {
+	api.bookId = bookId;
 	api.GetRange(["info!A:A", "list!A:H"]).then((obj) => {
 		runtime("データ取得");
 		if (obj.error) { // シートへのアクセス失敗
 			location.href = '/option.html?status=error'+obj.error.code;
-			throw new Error();
+			return;
 		}
 		var list = [];
 		$.each(obj.valueRanges[1].values, (i, one) => {
@@ -45,7 +45,7 @@ function createList(obj, name) {
 				<table name="video-table" border="1">
 					<tr class="title-row">
 						<td rowspan="3" width="32px">
-							<div class="">
+							<div class="check-area">
 								<input type="checkbox" value="${one.line}" class="check_css"/>
 							</div>
 						</td>
@@ -125,33 +125,35 @@ $(function() {
 	console.log("look: " + params["list"]);
 	
 	
-	getLocalStorage(["cache", "sheetId", "always_load"])
-	.then((value) => {
-		if (value.cache && !value.always_load) {
+	Promise.all([
+		getSyncStorage(["bookId"]),
+		getLocalStorage(["cache", "always_load"]),
+	]).then((values) => {
+		if (values[1].cache && !values[1].always_load) {
+			// キャッシュからロード
 			console.log("load cache");
-			createList(value.cache, params["list"]);
+			createList(values[1].cache, params["list"]);
 		}
 		else {
+			// ブックからロード
 			console.log("load sheet");
-			if (!value.sheetId) { // シートIDが未設定
+			if (!values[0].bookId) { // ブックIDが未設定
 				location.href = '/option.html?status=empty';
-				throw new Error();
+				return;
 			}
-			loadSheet(value.sheetId);
+			loadBook(values[0].bookId);
 		}
-	})
-	.catch(reason => {
-		console.log("error");
 	});
 	
+	// ボタン動作
 	$('#menu').click(() => {
 		$('.menu').first().slideToggle();
 	})
 	$('#reload').click(() => {
 		$('folder-list').empty();
 		$('list').empty();
-		getLocalStorage(["sheetId"]).then((value) => {
-			loadSheet(value.sheetId);
+		getSyncStorage(["bookId"]).then((value) => {
+			loadBook(value.bookId);
 		});
 	});
 	$('#option').click(() => {
@@ -163,9 +165,9 @@ $(function() {
 			checked_video.push(Number($(ele).val())+1);
 		});
 		console.log("delete line index: " + checked_video);
-		getLocalStorage(["sheetId", "list_sheet_id"]).then((value) => {
-			api.bookId = value.sheetId;
-			api.DeleteLine(value.list_sheet_id, checked_video);
+		getSyncStorage(["bookId", "sheetIds"]).then((value) => {
+			api.bookId = value.bookId;
+			api.DeleteLine(value.sheetIds.list, checked_video);
 		});
 	});
 	

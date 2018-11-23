@@ -2,9 +2,9 @@ chrome.runtime.onMessage.addListener(
 (request, sender, sendResponse) => {
 	switch(request.id) {
 		case "nicoMylist":
-			getLocalStorage("sheetId")
+			getSyncStorage("bookId")
 			.then((value) => {
-				api.bookId = value.sheetId;
+				api.bookId = value.bookId;
 				return api.AppendData("list", request.videoInfo);
 			})
 			.then((obj) => {
@@ -15,7 +15,7 @@ chrome.runtime.onMessage.addListener(
 				sendResponse({result: "success"});
 			})
 			.catch(reason => {
-
+				
 			});
 			break;
 
@@ -33,7 +33,13 @@ chrome.runtime.onMessage.addListener(
 			sendResponse({tab:sender.tab});
 			break;
 
-		case "test":
+		case "GetRange":
+			getSyncStorage(["bookId"]).then((value) => {
+				api.bookId = value.bookId; 
+				api.GetRange(request.ranges).then((value) => {
+					sendResponse(value);
+				});
+			});
 			break
 	}
 	return true;

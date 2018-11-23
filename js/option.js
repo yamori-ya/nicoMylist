@@ -3,26 +3,35 @@ $(function() {
 	var infoSheetId;
 	
 	// load
-	getLocalStorage([
-		"sheetId",
-		"info",
-		"list",
-		"auto_play",
-		"just_scroll",
-		"screen_click",
+	const SYNC_STORAGE = [
+		"bookId",
+		"sheetIds",
+	];
+	const LOCAL_STORAGE = [
+		"nico_setting",
 		"always_load",
-		"list_sheet_id",
-		"info_sheet_id",
+	];
+	Promise.all([
+		getSyncStorage(SYNC_STORAGE),
+		getLocalStorage(LOCAL_STORAGE),
 	]).then((values) => {
-		$('#sheetId').val(values.sheetId);
-		$('#info').val(values.info);
-		$('#list').val(values.list);
-		$('#autoPlay').prop('checked', values.auto_play);
-		$('#justmeetScroll').prop('checked', values.just_scroll);
-		$('#screenClick').prop('checked', values.screen_click);
-		$('#alwaysLoad').prop('checked', values.always_load);
-		listSheetId = values.list_sheet_id;
-		infoSheetId = values.info_sheet_id;
+		let sync = values[0];
+		let local = values[1];
+		
+		$('#bookId').val(sync.bookId);
+		$('#alwaysLoad').prop('checked', local.always_load);
+		
+		// 設定系
+		if (local.nico_setting) {
+			let setting = local.nico_setting;
+			$('#autoPlay').prop('checked', setting.auto_play);
+			$('#justScroll').prop('checked', setting.just_scroll);
+			$('#screenClick').prop('checked', setting.screen_click);
+		}
+		if (sync.sheetIds) {
+			listSheetId = sync.sheetIds.list;
+			infoSheetId = sync.sheetIds.info;
+		}
 	});
 	
 	var params = [];
@@ -43,36 +52,40 @@ $(function() {
 	$('#save').click(function() {
 		console.log("保存");
 		
-		setLocalStorage({
-			sheetId:$('#sheetId').val(),
-			auto_play:$('#autoPlay').prop('checked'),
-			just_scroll:$('#justmeetScroll').prop('checked'),
-			screen_click:$('#screenClick').prop('checked'),
-			always_load:$('#alwaysLoad').prop('checked')
-		})
-		.then(() => {
-			if (!listSheetId || !infoSheetId) {
-				api.bookId = $('#sheetId').val();
-				api.GetBookInfo().then((obj) => {
-					if (obj.error) { // シートへのアクセス失敗
-						location.href = '/option.html?status=error'+obj.error.code;
-						throw new Error();
+		// 各シートのIDが取得できていなかったら取得
+		if (!listSheetId || !infoSheetId) {
+			api.bookId = $('#bookId').val();
+			api.GetBookInfo().then((obj) => {
+				if (obj.error) { // シートへのアクセス失敗
+					location.href = '/option.html?status=error'+obj.error.code;
+				}
+				$.each(obj.sheets, (i, one) => {
+					switch(one.properties.title) {
+						case "list": listSheetId = one.properties.sheetId; break;
+						case "info": infoSheetId = one.properties.sheetId; break;
 					}
-					$.each(obj.sheets, (i, one) => {
-						switch(one.properties.title) {
-							case "list": listSheetId = one.properties.sheetId; break;
-							case "info": infoSheetId = one.properties.sheetId; break;
-						}
-					});
-					setLocalStorage({
-						list_sheet_id:listSheetId,
-						info_sheet_id:infoSheetId
-					});
 				});
+				setSyncStorage({
+					sheetIds :{
+						list:listSheetId,
+						info:infoSheetId
+					}
+				});
+			});
+		}
+		
+		// 保存
+		setSyncStorage({
+			bookId:$('#bookId').val(),
+		});
+		setLocalStorage({
+			always_load:$('#alwaysLoad').prop('checked'),
+			nico_setting : {
+				auto_play:$('#autoPlay').prop('checked'),
+				just_scroll:$('#justScroll').prop('checked'),
+				screen_click:$('#screenClick').prop('checked'),
 			}
 		});
-		
-		
 	});
 	
 	

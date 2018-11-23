@@ -9,8 +9,8 @@
   },
   
   "content_scripts": [ {
-      "js": [ "js/jquery-3.3.1.min.js", "content_scripts.js", "js/nicoApi.js", "js/function.js" ],
-      "css": [ "nicoMylist.css" ],
+      "js": [ "js/jquery-3.3.1.min.js", "js/SheetApi.js", "content_scripts.js", "js/nicoApi.js", "js/function.js" ],
+      "css": [ "nicoMylist.css", "css/content.css" ],
       "matches": [ 
         "http://*.nicovideo.jp/watch/*",
         "https://*.nicovideo.jp/watch/*",

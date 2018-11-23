@@ -1,22 +1,18 @@
-var video;
-function justmeetScroll() {
-	// 動画が見えるところまでスクロール
-	var metaRow = $(".HeaderContainer-row").eq(1);
-	var pos = metaRow.position().top;
-	$(window).first().scrollTop(pos);
-}
-
 $(function() {
+	var video;
+	var popopLayerHeight;
 	
 	if (document.domain == "www.nicovideo.jp") {
+		popopLayerHeight = $('.WatchAppContainer').height();
+		
 		$('.CommentPanelContainer').css('top','88px');
 		$('.VideoMenuContainer').css({
 			'top':'40px',
 			'position':'absolute'
 		});
 		var nicoMylistArea = '<div class="nicoMylist"></div>';
-		var defListBut = `
-			<div class="nicoMylist" style="padding-left: 8px;">
+		var buttons = `
+			<div class="nicoDeflist" style="padding-left: 8px;">
 				<button id="nicoDeflist" class="but">
 					<div class="but_frame free">
 						<svg id="but_svg" class="but_svg" class="path" viewBox="0 0 101 84" >
@@ -25,18 +21,22 @@ $(function() {
 						</svg>
 					</div>
 				</button>
+				<button id="select-list" class="but">
+					<div class="but_frame free">
+						<svg viewBox="0 0 100 84" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.4" id="but_svg" class="but_svg">
+							<path d="M22 0h22c.4 0 .8 0 1.1.2A8 8 0 0 1 51 4.9l3 7.1H92a8 8 0 0 1 8 8v56a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8V8a8 8 0 0 1 8-8h14zm48.2 53.4v-11a1.3 1.3 0 0 1 1.2-1.2h5.2a1.3 1.3 0 0 1 1.2 1.3v10.9h11a1.3 1.3 0 0 1 1.2 1.2v5.2a1.3 1.3 0 0 1-1.3 1.2H77.8v11a1.3 1.3 0 0 1-1.2 1.2h-5.2a1.3 1.3 0 0 1-1.2-1.3V61h-11a1.3 1.3 0 0 1-1.2-1.2v-5.2a1.3 1.3 0 0 1 1.3-1.2h10.9zM24 61.2v-8H12v8h12zm28 0v-8H28v8h24zm-28-14v-8H12v8h12zm40 0v-8H28v8h36zm-40-14v-8H12v8h12zm40 0v-8H28v8h36z"></path>
+						</svg>
+					</div>
 			</div>`;
 		$('.MainContainer-commentPanel').prepend(nicoMylistArea);
-		$('.nicoMylist').append(defListBut);
-		
-		
+		$('.nicoMylist').append(buttons);
 		$('#nicoDeflist').one('click', function() {
 			$('.but_frame').removeClass('free');
 			$('.but_frame').addClass('added');
 			
 			VideoInfo.getVideoInfoArray(location.href,"def")
 			.then((arr) => {
-				chrome.runtime.sendMessage({id:"nicoMylist", videoInfo:arr}, function(response) {
+				sendMessage({id:"nicoMylist", videoInfo:arr}).then(() => {
 					if (response.result == "success") {
 						alert("追加完了");
 					} else if (response.result == "faild") {
@@ -46,41 +46,44 @@ $(function() {
 			});
 		});
 		
+		// 動画が見えるところまでスクロール
+		var justScroll = function() {
+			var metaRow = $(".HeaderContainer-row").eq(1);
+			var pos = metaRow.position().top;
+			$(window).first().scrollTop(pos);
+		}
 		
 		const GET_VALUE = [
 			"player_tab_id",
 			"nico_full_screen",
-			//"youtube_full_screen",
-			"just_scroll",
-			"auto_play",
-			"screen_click",
+			"nico_setting",
 		];
 		var task1 = sendMessage({id:"get_current_tab"});
 		var task2 = getLocalStorage(GET_VALUE);
 		Promise.all([task1, task2]).then((values) => {
 			var currentTabId = values[0].tab.id;
 			var storage = values[1];
+			var nico_setting = storage.nico_setting;
 			if (storage.player_tab_id == currentTabId) {
 				if (storage.nico_full_screen) {
 					// 前回動画終了時にフルスクリーンだったら今動画もフルスクリーンに
 					$('.EnableFullScreenButton').first().click();
 				}
 				else {
-					justmeetScroll();
+					justScroll();
 				}
 				$('.PlayerPlayButton').first().click();
 			}
 			else {
-				if (storage.just_scroll) justmeetScroll();
-				if (storage.auto_play) $('.PlayerPlayButton').first().click();
+				if (nico_setting.just_scroll) justScroll();
+				if (nico_setting.auto_play) $('.PlayerPlayButton').first().click();
 			}
-			if (storage.screen_click) {
+			if (nico_setting.screen_click) {
 				$('#UadPlayer').on('click', function() {
 					$(video.paused ? '.PlayerPlayButton' : '.PlayerPauseButton').first().click();
 				});
 			}
 		});
-		
 		
 	}
 	
@@ -93,13 +96,52 @@ $(function() {
 		video = document.getElementsByTagName('video')[0];
 		video.onended = function(){
 			console.log("video ended");
+			// 現在動画がフルスクリーンだったら次もフルスクリーンにするために状態を保存
 			setLocalStorage({nico_full_screen:$('body').hasClass('is-fullscreen')});
-			chrome.runtime.sendMessage(
-				{id:"video_ended"},
-				(response) => {}
-			);
+			// マイリストタブへ動画終了を通知
+			sendMessage({id:"video_ended"});
 		}
-		
 	}, 1000);
 	
+	
+	// フォルダ選択ポップアップ挿入
+	var popup_body = function(list) {
+		var li = "<ul>";
+		$.each(list, (i, o) => {
+			li += `<li id="list-list${i}">${o}</li>`;
+		});
+		li += "</ul>";
+		return li;
+	}
+		
+	// ポップアップ部分挿入
+	$('body').append(
+		`<div id="select-list-layer"></div>
+		<div id="select-list-popup">
+		<div id="select-list-body">popup</div>
+		</div>`);
+	// フォルダ選択ボタンの動作
+	$('#select-list').on('click', (e) => {
+		
+		getLocalStorage(["list_list"]).then((value) => {
+			if (!value.list_list) {
+				sendMessage({id:"GetRange", ranges:["info!A:A"]})
+				.then((response) => {
+					console.dir(response);
+					var list = response.valueRanges[0].values.flat();
+					setLocalStorage({list_list:list});
+					$('#select-list-body').append(popup_body(list));
+				});
+			} else {
+				$('#select-list-body').append(popup_body(value.list_list));
+			}
+		});
+		
+		$('#select-list-popup').css({top:e.pageY, left:e.pageX})
+		$('#select-list-popup, #select-list-layer').toggle();
+		$('#select-list-layer').height(popopLayerHeight);
+		$('#select-list-layer').on('click', () => {
+			$('#select-list-popup, #select-list-layer').hide();
+		});
+	});
 });
