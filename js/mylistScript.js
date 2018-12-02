@@ -16,7 +16,7 @@ function loadBook(bookId) {
 		$.each(obj.valueRanges[1].values, (i, one) => {
 			list.push({
 				line:i, folder:one[0], index:one[1], url:one[2], title:one[3],
-				thumbnail:one[4], tag:one[5], time:one[6], instm:one[7]
+				thumbnail:one[4], tag:one[5], time:one[6], comment:one[7], instm:one[8]
 			});
 		});
 		cache_data = {
@@ -171,7 +171,7 @@ $(function() {
 		});
 	});
 	
-	
+	// 動画終了通知を受け取って次の動画へ移動
 	chrome.runtime.onMessage.addListener(
 		function(request, sender, sendResponse) {
 			if (request.id == "video_ended" && playTabId == sender.tab.id) {

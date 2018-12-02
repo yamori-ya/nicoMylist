@@ -21,6 +21,7 @@ class VideoInfo
 			});
 			data.push(tags.join(" "));
 			data.push(getXmlDoc("length"));
+			data.push("");
 			data.push(VideoInfo.getNowDate());
 			return data;
 		});

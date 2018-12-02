@@ -3,17 +3,13 @@ $(function() {
 	var popopLayerHeight;
 	
 	if (document.domain == "www.nicovideo.jp") {
-		popopLayerHeight = $('.WatchAppContainer').height();
+		popopLayerHeight = $('#js-app').height();
 		
 		$('.CommentPanelContainer').css('top','88px');
-		$('.VideoMenuContainer').css({
-			'top':'40px',
-			'position':'absolute'
-		});
 		var nicoMylistArea = '<div class="nicoMylist"></div>';
 		var buttons = `
 			<div class="nicoDeflist" style="padding-left: 8px;">
-				<button id="nicoDeflist" class="but">
+				<button id="nicoDeflist" class="hide-button">
 					<div class="but_frame free">
 						<svg id="but_svg" class="but_svg" class="path" viewBox="0 0 101 84" >
 						<path 
@@ -21,7 +17,7 @@ $(function() {
 						</svg>
 					</div>
 				</button>
-				<button id="select-list" class="but">
+				<button id="select-list" class="hide-button">
 					<div class="but_frame free">
 						<svg viewBox="0 0 100 84" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.4" id="but_svg" class="but_svg">
 							<path d="M22 0h22c.4 0 .8 0 1.1.2A8 8 0 0 1 51 4.9l3 7.1H92a8 8 0 0 1 8 8v56a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8V8a8 8 0 0 1 8-8h14zm48.2 53.4v-11a1.3 1.3 0 0 1 1.2-1.2h5.2a1.3 1.3 0 0 1 1.2 1.3v10.9h11a1.3 1.3 0 0 1 1.2 1.2v5.2a1.3 1.3 0 0 1-1.3 1.2H77.8v11a1.3 1.3 0 0 1-1.2 1.2h-5.2a1.3 1.3 0 0 1-1.2-1.3V61h-11a1.3 1.3 0 0 1-1.2-1.2v-5.2a1.3 1.3 0 0 1 1.3-1.2h10.9zM24 61.2v-8H12v8h12zm28 0v-8H28v8h24zm-28-14v-8H12v8h12zm40 0v-8H28v8h36zm-40-14v-8H12v8h12zm40 0v-8H28v8h36z"></path>
@@ -36,7 +32,7 @@ $(function() {
 			
 			VideoInfo.getVideoInfoArray(location.href,"def")
 			.then((arr) => {
-				sendMessage({id:"nicoMylist", videoInfo:arr}).then(() => {
+				sendMessage({id:"nicoMylist", videoInfo:arr}).then((response) => {
 					if (response.result == "success") {
 						alert("追加完了");
 					} else if (response.result == "faild") {
@@ -108,40 +104,61 @@ $(function() {
 	var popup_body = function(list) {
 		var li = "<ul>";
 		$.each(list, (i, o) => {
-			li += `<li id="list-list${i}">${o}</li>`;
+			li += `<li"><button value="${i}">${o}</button></li>`;
 		});
+		li += '<li><button><div class="center"><span class="plus icon"></span><span class="add-list">新規リスト作成</span></div></button></li>'
 		li += "</ul>";
 		return li;
 	}
-		
+	
 	// ポップアップ部分挿入
 	$('body').append(
 		`<div id="select-list-layer"></div>
 		<div id="select-list-popup">
-		<div id="select-list-body">popup</div>
+		<div id="close-pop" class="close icon"></div>
+		<div id="select-list-title" style="padding-top:10px;">マイリストを選択</div>
+		<div id="select-list-body"></div>
 		</div>`);
 	// フォルダ選択ボタンの動作
 	$('#select-list').on('click', (e) => {
+		// スクロールバーを消すときのズレを解消
+		var shift_dom = "body";
+		if (document.domain == "www.nicovideo.jp") {
+			shift_dom += ", #siteHeaderInner, #siteHeader";
+		}
+		$(shift_dom).addClass("shift");
 		
+		// マイリスト一覧作成
+		$('#select-list-body').empty();
 		getLocalStorage(["list_list"]).then((value) => {
+			var pbody = "";
 			if (!value.list_list) {
-				sendMessage({id:"GetRange", ranges:["info!A:A"]})
-				.then((response) => {
+				sendMessage({id:"GetRange", ranges:["info!A:A"]}).then((response) => {
 					console.dir(response);
 					var list = response.valueRanges[0].values.flat();
 					setLocalStorage({list_list:list});
-					$('#select-list-body').append(popup_body(list));
+					pbody = popup_body(list);
 				});
 			} else {
-				$('#select-list-body').append(popup_body(value.list_list));
+				pbody = popup_body(value.list_list);
 			}
+			$('#select-list-body').append(pbody);
 		});
 		
-		$('#select-list-popup').css({top:e.pageY, left:e.pageX})
+		// 画面外に出るようなら左側に表示
+		var popX = e.clientX, popY = e.clientY;
+		if (e.clientX + 350 > $(window).width()) {
+			popX = e.clientX - 350;
+		}
+		$('#select-list-popup').css({top:popY, left:popX});
 		$('#select-list-popup, #select-list-layer').toggle();
 		$('#select-list-layer').height(popopLayerHeight);
-		$('#select-list-layer').on('click', () => {
+		
+		// ポップアップ以外 or ×ボタン押したら閉じる
+		$('#select-list-layer, #close-pop').on('click', () => {
+			$(shift_dom).removeClass("shift");
 			$('#select-list-popup, #select-list-layer').hide();
 		});
 	});
 });
+
