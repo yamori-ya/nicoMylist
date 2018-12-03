@@ -1,13 +1,25 @@
 var playTabId;
 var nowIndex;
+function showLoad() {
+	$('#load-layer, #loader').show();
+}
+function hideLoad() {
+	$('#load-layer, #loader').hide();
+}
 function getListUrl(index) {
 	return  $(`ul > #list-${index}`).find('a:eq(0)').attr('href');
+}
+function getCheckedLines() {
+	var checked_video = [];
+	$("input[type='checkbox']").filter(":checked").each((i,e) => {
+		checked_video.push(Number($(e).val())+1);
+	});
+	return checked_video;
 }
 
 function loadBook(bookId) {
 	api.bookId = bookId;
 	api.GetRange(["info!A:A", "list!A:H"]).then((obj) => {
-		runtime("データ取得");
 		if (obj.error) { // シートへのアクセス失敗
 			location.href = '/option.html?status=error'+obj.error.code;
 			return;
@@ -28,65 +40,59 @@ function loadBook(bookId) {
 	});
 }
 
-var ttt = new Date();;
-function runtime(msg) {
-	var nt = new Date();
-	console.log(msg + (nt - ttt));
-	ttt = nt;
-}
-
 function createList(obj, name) {
 	var str = "";
+	var cnt = 0;
 	$.each(obj.data, function(i, one) {
 		if (one.folder != name)
 			return true;
+		cnt++;
 		str += `
-			<li data-id="${i}" id="list-${i}">
-				<table name="video-table" border="1">
-					<tr class="title-row">
-						<td rowspan="3" width="32px">
-							<div class="check-area">
-								<input type="checkbox" value="${one.line}" class="check_css"/>
-							</div>
-						</td>
-						<td class="thumbnail-col" rowspan="3" width="130px">
-							<div class="img-area">
-								<a target="_brank" href="${one.url}">
-									<img class="thumbnail" width="130px" src="${one.thumbnail}">
-								</a>
-							</div>
-						</td>
-						<td>
-							<div class="play-here">
-								<button value="${i}">ここから連続再生</button>
-							</div>
-							<div class="title">
-								<a target="_brank" href="${one.url}">${one.title}</a>
-							</div>
-						</td>
-						<td rowspan="3" width="32px">
-							<span id="menuButton" class="handle">
-								<span></span>
-							</span>
-						</td>
-					</tr>
-					<tr class="tags-row">
-						<td>
-							<div>${one.tag}</div>
-						</td>
-					</tr>
-					<tr class="comment-row">
-						<td class="comment-col">
-							<div class="comment">${one.comment}</div>
-						</td>
-					</tr>
-				</table>
-				<br>
-				<br>
-			</li>
-		`;
+<li data-id="${cnt}" id="list-${cnt}">
+	<table name="video-table" border="1">
+		<tr class="title-row">
+			<td rowspan="3" width="32px">
+				<div class="check-area">
+					<input type="checkbox" value="${one.line}" class="check_css"/>
+				</div>
+			</td>
+			<td class="thumbnail-col" rowspan="3" width="130px">
+				<div class="img-area">
+					<a target="_brank" href="${one.url}">
+						<img class="thumbnail" width="130px" src="${one.thumbnail}">
+					</a>
+				</div>
+			</td>
+			<td>
+				<div class="play-here">
+					<button value="${cnt}">ここから連続再生</button>
+				</div>
+				<div class="title">
+					<a target="_brank" href="${one.url}">${one.title}</a>
+				</div>
+			</td>
+			<td rowspan="3" width="32px">
+				<span id="menuButton" class="handle">
+					<span></span>
+				</span>
+			</td>
+		</tr>
+		<tr class="tags-row">
+			<td>
+				<div>${one.tag}</div>
+			</td>
+		</tr>
+		<tr class="comment-row">
+			<td class="comment-col">
+				<div class="comment">${one.comment}</div>
+			</td>
+		</tr>
+	</table>
+	<br>
+	<br>
+</li>`;
 	});
-	$('.list').html(str);
+	$('#list').html(str);
 	
 	str = "";
 	$.each(obj.folder, (i, f) => {
@@ -99,36 +105,42 @@ function createList(obj, name) {
 		$(this).find('button').on('click', function() {
 			nowIndex = $(this).val();
 			console.log("button index: " + nowIndex);
-			var ur = getListUrl(nowIndex);
+			
 			setLocalStorage({nico_full_screen:false});
-			chrome.tabs.create({url:ur, active:true}, function(tab) {
+			chrome.tabs.create({url:getListUrl(nowIndex), active:true}, function(tab) {
 				playTabId = tab.id;
 				setLocalStorage({player_tab_id:playTabId});
 			});
 		});
 	});
+	// 各テーブルにマウスが乗ると再生ボタン表示
 	$('[name=video-table]').each(function() {
-		var but = $(this).find('.play-here');
 		$(this).hover(
-			function(){ but.css('visibility', 'visible'); },
-			function(){ but.css('visibility', 'hidden'); }
+			() => $(this).find('.play-here').toggle(),
+			() => $(this).find('.play-here').toggle()
 		);
 	});
+	
+	// リストが作成されたらぐるぐる非表示
+	hideLoad();
 }
 
 
 $(function() {
+	// ページ表示前にぐるぐる表示
+	showLoad();
+	
 	params = getUrlParams();
 	if (!params["list"]) {
 		params["list"] = "def";
 	}
 	console.log("look: " + params["list"]);
 	
-	
 	Promise.all([
 		getSyncStorage(["bookId"]),
 		getLocalStorage(["cache", "always_load"]),
-	]).then((values) => {
+	])
+	.then((values) => {
 		if (values[1].cache && !values[1].always_load) {
 			// キャッシュからロード
 			console.log("load cache");
@@ -136,11 +148,11 @@ $(function() {
 		}
 		else {
 			// ブックからロード
-			console.log("load sheet");
 			if (!values[0].bookId) { // ブックIDが未設定
 				location.href = '/option.html?status=empty';
 				return;
 			}
+			console.log("load sheet");
 			loadBook(values[0].bookId);
 		}
 	});
@@ -150,8 +162,8 @@ $(function() {
 		$('.menu').first().slideToggle();
 	})
 	$('#reload').click(() => {
-		$('folder-list').empty();
-		$('list').empty();
+		showLoad();
+		$('#folder-list, #list').empty();
 		getSyncStorage(["bookId"]).then((value) => {
 			loadBook(value.bookId);
 		});
@@ -159,15 +171,14 @@ $(function() {
 	$('#option').click(() => {
 		location.href = '/option.html';
 	});
+	
 	$('#delete').click(() => {
-		var checked_video = [];
-		$("input[type='checkbox']").filter(":checked").each((i,ele) => {
-			checked_video.push(Number($(ele).val())+1);
-		});
+		var checked_video = getCheckedLines();
 		console.log("delete line index: " + checked_video);
 		getSyncStorage(["bookId", "sheetIds"]).then((value) => {
 			api.bookId = value.bookId;
 			api.DeleteLine(value.sheetIds.list, checked_video);
+			// TODO: キャッシュと画面を編集
 		});
 	});
 	
