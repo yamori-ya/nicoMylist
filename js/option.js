@@ -9,7 +9,6 @@ $(function() {
 	];
 	const LOCAL_STORAGE = [
 		"nico_setting",
-		"always_load",
 	];
 	Promise.all([
 		getSyncStorage(SYNC_STORAGE),
@@ -19,7 +18,6 @@ $(function() {
 		let local = values[1];
 		
 		$('#bookId').val(sync.bookId);
-		$('#alwaysLoad').prop('checked', local.always_load);
 		
 		// 設定系
 		if (local.nico_setting) {
@@ -79,7 +77,6 @@ $(function() {
 			bookId:$('#bookId').val(),
 		});
 		setLocalStorage({
-			always_load:$('#alwaysLoad').prop('checked'),
 			nico_setting : {
 				auto_play:$('#autoPlay').prop('checked'),
 				just_scroll:$('#justScroll').prop('checked'),

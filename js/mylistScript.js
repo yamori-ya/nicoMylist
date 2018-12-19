@@ -18,8 +18,18 @@ function getCheckedLines() {
 }
 
 function loadBook(bookId) {
-	api.bookId = bookId;
-	api.GetRange(["info!A:A", "list!A:H"]).then((obj) => {
+	showLoad();
+	$('#folder-list, #list').empty();
+	getSyncStorage(["bookId"])
+	.then((value) => {
+		if (!value.bookId) { // ブックIDが未設定
+			location.href = '/option.html?status=empty';
+			return;
+		}
+		api.bookId = value.bookId;
+		return api.GetRange(["info!A:A", "list!A:H"]);
+	})
+	.then((obj) => {
 		if (obj.error) { // シートへのアクセス失敗
 			location.href = '/option.html?status=error'+obj.error.code;
 			return;
@@ -35,7 +45,10 @@ function loadBook(bookId) {
 			folder: obj.valueRanges[0].values.flat(),
 			data: list
 		};
-		setLocalStorage({cache:cache_data});
+		setLocalStorage({
+			cache:cache_data,
+			have_to_reload:false
+		});
 		createList(cache_data, params["list"]);
 	});
 }
@@ -136,24 +149,17 @@ $(function() {
 	}
 	console.log("look: " + params["list"]);
 	
-	Promise.all([
-		getSyncStorage(["bookId"]),
-		getLocalStorage(["cache", "always_load"]),
-	])
-	.then((values) => {
-		if (values[1].cache && !values[1].always_load) {
+	getLocalStorage(["cache", "have_to_reload"])
+	.then((value) => {
+		if (value.cache && !value.have_to_reload) {
 			// キャッシュからロード
 			console.log("load cache");
-			createList(values[1].cache, params["list"]);
+			createList(value.cache, params["list"]);
 		}
 		else {
 			// ブックからロード
-			if (!values[0].bookId) { // ブックIDが未設定
-				location.href = '/option.html?status=empty';
-				return;
-			}
 			console.log("load sheet");
-			loadBook(values[0].bookId);
+			loadBook();
 		}
 	});
 	
@@ -162,24 +168,24 @@ $(function() {
 		$('.menu').first().slideToggle();
 	})
 	$('#reload').click(() => {
-		showLoad();
-		$('#folder-list, #list').empty();
-		getSyncStorage(["bookId"]).then((value) => {
-			loadBook(value.bookId);
-		});
+		loadBook();
 	});
 	$('#option').click(() => {
 		location.href = '/option.html';
 	});
 	
 	$('#delete').click(() => {
+		showLoad();
 		var checked_video = getCheckedLines();
 		console.log("delete line index: " + checked_video);
-		getSyncStorage(["bookId", "sheetIds"]).then((value) => {
+		getSyncStorage(["bookId", "sheetIds"])
+		.then((value) => {
 			api.bookId = value.bookId;
-			api.DeleteLine(value.sheetIds.list, checked_video);
-			// TODO: キャッシュと画面を編集
-		});
+			return api.DeleteLine(value.sheetIds.list, checked_video);
+		})
+		.then((response) => {
+			loadBook();
+		})
 	});
 	
 	// 動画終了通知を受け取って次の動画へ移動

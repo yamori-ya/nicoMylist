@@ -32,8 +32,9 @@ $(function() {
 			
 			VideoInfo.getVideoInfoArray(location.href,"def")
 			.then((arr) => {
-				sendMessage({id:"nicoMylist", videoInfo:arr}).then((response) => {
+				sendMessage({id:"add_video", videoInfo:arr}).then((response) => {
 					if (response.result == "success") {
+						setLocalStorage({have_to_reload:true});
 						alert("追加完了");
 					} else if (response.result == "faild") {
 						alert("追加失敗");

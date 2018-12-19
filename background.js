@@ -1,7 +1,7 @@
 chrome.runtime.onMessage.addListener(
 (request, sender, sendResponse) => {
 	switch(request.id) {
-		case "nicoMylist":
+		case "add_video":
 			getSyncStorage("bookId")
 			.then((value) => {
 				api.bookId = value.bookId;
