@@ -64,8 +64,8 @@ function createList(obj, name) {
 <li data-id="${cnt}" id="list-${cnt}">
 	<table name="video-table" border="1">
 		<tr class="title-row">
-			<td rowspan="3" width="32px">
-				<div class="check-area">
+			<td rowspan="3" width="32px" class="check-area">
+				<div>
 					<input type="checkbox" value="${one.line}" class="check_css"/>
 				</div>
 			</td>
@@ -164,9 +164,16 @@ $(function() {
 	});
 	
 	// ボタン動作
-	$('#menu').click(() => {
-		$('.menu').first().slideToggle();
-	})
+	$('#edit').on('click', () => {
+		if ($('.check-area').css('display') == 'none') {
+			$('.check-area').animate( { width: 'show' }, () => {
+				$('.check-area').find('input').show();
+			});
+		} else {
+			$('.check-area').animate( { width: 'hide' } );
+			$('.check-area').find('input').hide();
+		}
+	});
 	$('#reload').click(() => {
 		loadBook();
 	});

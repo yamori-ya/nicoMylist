@@ -103,12 +103,11 @@ $(function() {
 	
 	// フォルダ選択ポップアップ挿入
 	var popup_body = function(list) {
-		var li = "<ul>";
+		var li = "";
 		$.each(list, (i, o) => {
-			li += `<li"><button value="${i}">${o}</button></li>`;
+			li += `<button value="${i}">${o}</button>`;
 		});
-		li += '<li><button><div class="center"><span class="plus icon"></span><span class="add-list">新規リスト作成</span></div></button></li>'
-		li += "</ul>";
+		li += '<button><div class="center"><span class="plus icon"></span><span class="add-list">新規リスト作成</span></div></button>'
 		return li;
 	}
 	
@@ -117,7 +116,7 @@ $(function() {
 		`<div id="select-list-layer"></div>
 		<div id="select-list-popup">
 		<div id="close-pop" class="close icon"></div>
-		<div id="select-list-title" style="padding-top:10px;">マイリストを選択</div>
+		<div id="select-list-title" style="padding:10px;">マイリストを選択</div>
 		<div id="select-list-body"></div>
 		</div>`);
 	// フォルダ選択ボタンの動作

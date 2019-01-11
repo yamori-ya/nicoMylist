@@ -3,7 +3,7 @@
 <html>
 <head>
 <title>マイリスト</title>
-<link rel="stylesheet" type="text/css" href="css/nicoMylist.css">
+<link rel="stylesheet" href="css/nicoMylist.css">
 <script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
 <script type="text/javascript" src="js/function.js"></script>
 <script type="text/javascript" src="js/SheetApi.js"></script>
@@ -20,15 +20,12 @@
 		<span style="float:left;">
 			aaa
 		</span>
-		<span class="head-but" style="float:right;" >
-			<button id="menu">設定</button>
-			<ul class="menu">
-				<li><button id="reload">更新</button></li>
-				<li><button id="edit">編集</button></li>
-				<li><button id="option">オプション</button></li>
-				<li><button id="delete">削除</button></li>
-			</ul>
-		</span>
+		<ul class="menu">
+			<li><button id="delete">削除</button></li>
+			<li><svg id="edit"  ><use xlink:href="sprite.svg#icon-edit"  /></svg></li>
+			<li><svg id="reload"><use xlink:href="sprite.svg#icon-reload"/></svg></li>
+			<li><svg id="option"><use xlink:href="sprite.svg#icon-option"/></svg></li>
+		</ul>
 		
 	</header>
 	

@@ -56,6 +56,7 @@ $(function() {
 			api.GetBookInfo().then((obj) => {
 				if (obj.error) { // シートへのアクセス失敗
 					location.href = '/option.html?status=error'+obj.error.code;
+					return;
 				}
 				$.each(obj.sheets, (i, one) => {
 					switch(one.properties.title) {
@@ -63,6 +64,10 @@ $(function() {
 						case "info": infoSheetId = one.properties.sheetId; break;
 					}
 				});
+				if (!listSheetId || !infoSheetId) {
+					location.href = '/option.html?status=error'+obj.error.code;
+					return;
+				}
 				setSyncStorage({
 					sheetIds :{
 						list:listSheetId,

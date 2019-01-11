@@ -57,14 +57,13 @@
 	border-top: solid 5px #5d627b;
 	box-shadow: 0 10px 50px rgba(0, 0, 0, 1);
 }
-#select-list-popup ul {
-	list-style: none;
-	padding: 0 20px 0 20px;
-}
 
 #select-list-popup button {
 	height: 28px;
 	width: 100%;
+  padding: 0;
+	margin-left: 20px;
+	margin-right: 20px;
 	text-align: left;
 	background-color: transparent;
 	border: none;
@@ -75,7 +74,7 @@
 #select-list-popup button:hover {
 	background-color:#a6caed;
 }
-#select-list-popup li:last-child button:hover {
+#select-list-popup button:last-child:hover {
 	background-color:#ffb670;
 }
 .center {
