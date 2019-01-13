@@ -16,6 +16,10 @@ function getCheckedLines() {
 	});
 	return checked_video;
 }
+function scroll(height) {
+	$('body,html').animate({ scrollTop: height }, 300);
+  return false;
+}
 
 function loadBook(bookId) {
 	showLoad();
@@ -193,6 +197,13 @@ $(function() {
 		.then((response) => {
 			loadBook();
 		})
+	});
+	
+	$('.scroll-btn > .top').on('click', () => {
+		scroll(0);
+	});
+	$('.scroll-btn > .bottom').on('click', () => {
+		scroll($(document).height());
 	});
 	
 	// 動画終了通知を受け取って次の動画へ移動
