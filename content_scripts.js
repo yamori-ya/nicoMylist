@@ -130,19 +130,10 @@ $(function() {
 		
 		// マイリスト一覧作成
 		$('#select-list-body').empty();
-		getLocalStorage(["list_list"]).then((value) => {
-			var pbody = "";
-			if (!value.list_list) {
-				sendMessage({id:"GetRange", ranges:["info!A:A"]}).then((response) => {
-					console.dir(response);
-					var list = response.valueRanges[0].values.flat();
-					setLocalStorage({list_list:list});
-					pbody = popup_body(list);
-				});
-			} else {
-				pbody = popup_body(value.list_list);
-			}
-			$('#select-list-body').append(pbody);
+		getLocalStorage(["cache"]).then((value) => {
+			$('#select-list-body').append(
+				popup_body(value.cache ? value.cache.folder : ["def"])
+			);
 		});
 		
 		// 画面外に出るようなら左側に表示
