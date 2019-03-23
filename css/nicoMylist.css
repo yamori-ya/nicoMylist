@@ -78,8 +78,11 @@ ul {
 	border: solid 2px #393F3F;
 }
 .title {
-	/* position: relative;
+	/* position: relative;   
 	top: 11px; */
+	width: 600px;
+	font-size: 1.2em;
+	font-weight: 600;
 }
 .play-here {
 	display: none;
@@ -91,7 +94,32 @@ ul {
 	border:#C9CFCF solid 2px;
 	background: #F9FFFF;
 }
-
+.comment {
+	width: 600px;
+}
+.tags-row {
+	vertical-align: top;
+}
+.tags-row ul {
+  padding: 0;
+	width: 600px;
+	padding: 3px 0 0 3px;
+}
+.tags-row li {
+  list-style: none;
+  display: inline-block;
+  padding: 0 3px 0 3px;
+  margin: 0 0 5px 0;
+  border: solid 1px #bfbfbf;
+  border-radius: 10px;
+  white-space: nowrap;
+  background: white;
+	font-weight: bold;
+	color: #555;
+}
+.check-area {
+	float: left;
+}
 
 
 

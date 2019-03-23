@@ -24,6 +24,9 @@ function scroll(height) {
 function loadBook(bookId) {
 	showLoad();
 	$('#folder-list, #list').empty();
+	
+	const startTime = Date.now();
+	
 	getSyncStorage(["bookId"])
 	.then((value) => {
 		if (!value.bookId) { // ブックIDが未設定
@@ -31,7 +34,7 @@ function loadBook(bookId) {
 			return;
 		}
 		api.bookId = value.bookId;
-		return api.GetRange(["info!A:A", "list!A:H"]);
+		return api.GetRange(["info!A:A", "list!A:I"]);
 	})
 	.then((obj) => {
 		if (obj.error) { // シートへのアクセス失敗
@@ -54,6 +57,8 @@ function loadBook(bookId) {
 			have_to_reload:false
 		});
 		createList(cache_data, params["list"]);
+		const endTime = Date.now();
+		console.log("load book time: " + (endTime - startTime));
 	});
 }
 
@@ -63,16 +68,23 @@ function createList(obj, name) {
 	$.each(obj.data, function(i, one) {
 		if (one.folder != name)
 			return true;
+		
+		var tags = "";
+		if (one.tag && one.tag.length > 0)
+		$.each(one.tag.split(' '), (i, t) => {
+			tags += `<li>${t}</li>`;
+		});
 		cnt++;
 		str += `
 <li data-id="${cnt}" id="list-${cnt}">
+
+<div class="check-area">
+	<input type="checkbox" value="${one.line}" class="check_css"/>
+</div>
+
 	<table name="video-table" border="1">
 		<tr class="title-row">
-			<td rowspan="3" width="32px" class="check-area">
-				<div>
-					<input type="checkbox" value="${one.line}" class="check_css"/>
-				</div>
-			</td>
+
 			<td class="thumbnail-col" rowspan="3" width="130px">
 				<div class="img-area">
 					<a target="_brank" href="${one.url}">
@@ -96,7 +108,7 @@ function createList(obj, name) {
 		</tr>
 		<tr class="tags-row">
 			<td>
-				<div>${one.tag}</div>
+				<ul>${tags}</ul>
 			</td>
 		</tr>
 		<tr class="comment-row">
@@ -169,14 +181,8 @@ $(function() {
 	
 	// ボタン動作
 	$('#edit').on('click', () => {
-		if ($('.check-area').css('display') == 'none') {
-			$('.check-area').animate( { width: 'show' }, () => {
-				$('.check-area').find('input').show();
-			});
-		} else {
-			$('.check-area').animate( { width: 'hide' } );
-			$('.check-area').find('input').hide();
-		}
+		// $('.check-area').toggle();
+		$('.check-area').animate({width: 'toggle'});
 	});
 	$('#reload').click(() => {
 		loadBook();
