@@ -1,6 +1,7 @@
+var video;
+var popopLayerHeight;
+
 $(function() {
-	var video;
-	var popopLayerHeight;
 	
 	if (document.domain == "www.nicovideo.jp") {
 		popopLayerHeight = $('#js-app').height();
@@ -26,21 +27,21 @@ $(function() {
 			</div>`;
 		$('.MainContainer-commentPanel').prepend(nicoMylistArea);
 		$('.nicoMylist').append(buttons);
+		
+		
 		$('#nicoDeflist').one('click', function() {
 			$('.but_frame').removeClass('free');
 			$('.but_frame').addClass('added');
 			
-			VideoInfo.getVideoInfoArray(location.href,"def")
-			.then((arr) => {
-				sendMessage({id:"add_video", videoInfo:arr}).then((response) => {
-					if (response.result == "success") {
-						setLocalStorage({have_to_reload:true});
-						alert("追加完了");
-					} else if (response.result == "faild") {
-						alert("追加失敗");
-					}
-				});
+			sendMessage({id:"add_video", videoInfo:getNicoData("def")}).then((response) => {
+				if (response.result == "success") {
+					setLocalStorage({have_to_reload:true});
+					alert("追加完了");
+				} else if (response.result == "faild") {
+					alert("追加失敗");
+				}
 			});
+			
 		});
 		
 		// 動画が見えるところまでスクロール
@@ -76,29 +77,55 @@ $(function() {
 				if (nico_setting.auto_play) $('.PlayerPlayButton').first().click();
 			}
 			if (nico_setting.screen_click) {
-				$('#UadPlayer').on('click', function() {
-					$(video.paused ? '.PlayerPlayButton' : '.PlayerPauseButton').first().click();
-				});
+				addNicoPlayButton();
 			}
 		});
 		
+		
+		// ニコニコは1秒くらい待たないとvideoが正常に取得できない
+		setTimeout(function() {
+			video = document.getElementsByTagName('video')[0];
+			
+			$(video).on('end', function() {
+				console.log('first ended');
+			});
+			
+			$(video).on('ended', function() {
+				console.log("video ended");
+				// 現在動画がフルスクリーンだったら次もフルスクリーンにするために状態を保存
+				setLocalStorage({nico_full_screen:$('body').hasClass('is-fullscreen')});
+				// マイリストタブへ動画終了を通知
+				sendMessage({id:"video_ended"});
+				
+				// 再生終了したらover-layerを非表示
+				$('#over-layer').hide();
+			});
+			
+			$(video).on('pause', function() {
+				console.log('pause');
+				$('#play.controll-button').show();
+				$('#pause.controll-button').hide();
+			});
+			$(video).on('play', function() {
+				console.log('play');
+				$('#play.controll-button').hide();
+				$('#pause.controll-button').show();
+				// ループ等で再生再開したとき用にover-layerを再表示
+				$('#over-layer').show();
+			});
+			$(video).on('seeked', function() {
+				console.log('seeked');
+				// 終了後に非表示にしてるのでシークでボタンがまた表示されるように
+				$('#over-layer').show();
+			});
+		}, 1000);
 	}
 	
 	if (document.domain == "www.youtube.com") {
 		
 	}
 	
-	// ニコニコは1秒くらい待たないとvideoが正常に取得できない
-	setTimeout(function() {
-		video = document.getElementsByTagName('video')[0];
-		video.onended = function(){
-			console.log("video ended");
-			// 現在動画がフルスクリーンだったら次もフルスクリーンにするために状態を保存
-			setLocalStorage({nico_full_screen:$('body').hasClass('is-fullscreen')});
-			// マイリストタブへ動画終了を通知
-			sendMessage({id:"video_ended"});
-		}
-	}, 1000);
+	
 	
 	
 	// フォルダ選択ポップアップ挿入
@@ -153,3 +180,54 @@ $(function() {
 	});
 });
 
+
+
+function addNicoPlayButton() {
+	// play/pauseボタン
+	$('.InView.VideoContainer').append(`
+		<div id="over-layer">
+			<div id="hover-layer"></div>
+			<div id="play" class="controll-button">
+				<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 13.229 13.229">
+					<path d="M13.23 6.615a6.615 6.615 0 0 1-6.615 6.614A6.615 6.615 0 0 1 0 6.615 6.615 6.615 0 0 1 6.615 0a6.615 6.615 0 0 1 6.614 6.615z"/>
+					<path d="M10.054 6.615l-5.16 2.978V3.636z" fill="#fff"/>
+				</svg>
+			</div>
+			<div id="pause" class="controll-button" style="display: none;">
+				<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 13.229 13.229">
+					<g transform="translate(0 -283.77)">
+						<circle cx="6.615" cy="290.385" r="6.615"/>
+						<path fill="#fff" d="M3.969 287.21h1.852v6.35H3.969zM7.408 287.21H9.26v6.35H7.408z"/>
+					</g>
+				</svg>
+			</div>
+		</div>`
+	);
+	$('.controll-button').on('click', function() {
+		if (video) {
+			$(video.paused ? '.PlayerPlayButton' : '.PlayerPauseButton').click();
+		}
+	});
+}
+
+function getNicoData(group) {
+	var json = JSON.parse($('#js-initial-watch-data').attr('data-api-data'));
+	
+	var now = new Date();
+	var yyyy = now.getFullYear(),
+		MM = (now.getMonth() + 1),
+		dd = now.getDate(),
+		hh = now.getHours(),
+		mm = now.getMinutes(),
+		sc = now.getSeconds();
+	
+	return [
+		group, "index",
+		location.href,
+		json.video.title,
+		json.video.largeThumbnailURL,
+		json.tags.map((tag) => tag.name).join(" "),
+		$('span.PlayerPlayTime-duration').text(),
+		"", `${yyyy}/${MM}/${dd} ${hh}:${mm}:${sc}`,
+	];
+}

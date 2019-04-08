@@ -1,3 +1,56 @@
+/* 既存要素 */
+button.VideoStartButton {
+	display: none;
+}
+.PreVideoStartPremiumLinkContainer {
+	display: none;
+}
+
+
+
+#over-layer {
+	position: absolute;
+	z-index: 51;
+	width: 100%;
+	height: 100%;
+}
+#hover-layer {
+	position: absolute;
+	margin: auto;
+	width: 39.06%;
+	height: 69.44%;
+	border-radius: 50%;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	transition: 300ms;
+}
+#hover-layer:hover ~ .controll-button {
+	transition: 300ms;
+	opacity: 0.3;
+}
+.controll-button {
+	opacity: 0;
+	position: absolute;
+	margin: auto;
+	width: 14.063%;
+	height: 25%;
+	border-radius: 50%;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	cursor: pointer;
+	transition: 300ms;
+}
+.controll-button:hover {
+	display: block;
+	opacity: 0.5;
+	transform: scale(1.2);
+}
+
+
 .but_frame {
 	height: 24.9px;
 	width: 30px;
