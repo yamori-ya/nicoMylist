@@ -1,7 +1,45 @@
-var video;
-var popopLayerHeight;
+const PROP = [
+	"player_tab_id",
+	"nico_full_screen",
+	"nico_setting",
+];
 
-$(function() {
+// videoを正常に取得できるまで500ms間隔で取得
+function getVideo() {
+	return new Promise(function(resolve, reject) {
+		setTimeout(function() {
+			console.log("video load");
+			var video = document.getElementsByTagName('video')[0];
+			
+			// 正常にvideo取得できなかったらもう一度
+			if (!video || !$(video).prop('src')) {
+				getVideo().then((video) => resolve(video));
+			}
+			// videoロードが完了したら
+			if (video && $(video).prop('src')) {
+				console.log("loaded video element: ->");
+				console.log(video);
+				resolve(video);
+			}
+		}, 500);
+	});
+}
+
+
+
+
+Promise.all([
+	getLocalStorage(PROP),
+	sendMessage({id:"get_current_tab"}),
+	new Promise(function(resolve, reject) {
+		$(function() { resolve(); });
+	}),
+]).then((values) => {
+	
+	var storage = values[0];
+	var nico_setting = storage.nico_setting;
+	var currentTabId = values[1].tab.id;
+	var popopLayerHeight;
 	
 	if (document.domain == "www.nicovideo.jp") {
 		popopLayerHeight = $('#js-app').height();
@@ -51,44 +89,27 @@ $(function() {
 			$(window).first().scrollTop(pos);
 		}
 		
-		const GET_VALUE = [
-			"player_tab_id",
-			"nico_full_screen",
-			"nico_setting",
-		];
-		var task1 = sendMessage({id:"get_current_tab"});
-		var task2 = getLocalStorage(GET_VALUE);
-		Promise.all([task1, task2]).then((values) => {
-			var currentTabId = values[0].tab.id;
-			var storage = values[1];
-			var nico_setting = storage.nico_setting;
-			if (storage.player_tab_id == currentTabId) {
-				if (storage.nico_full_screen) {
-					// 前回動画終了時にフルスクリーンだったら今動画もフルスクリーンに
-					$('.EnableFullScreenButton').first().click();
-				}
-				else {
-					justScroll();
-				}
-				$('.PlayerPlayButton').first().click();
+		if (storage.player_tab_id == currentTabId) {
+			if (storage.nico_full_screen) {
+				// 前回動画終了時にフルスクリーンだったら今動画もフルスクリーンに
+				$('.EnableFullScreenButton').first().click();
 			}
 			else {
-				if (nico_setting.just_scroll) justScroll();
-				if (nico_setting.auto_play) $('.PlayerPlayButton').first().click();
+				justScroll();
 			}
-			if (nico_setting.screen_click) {
-				addNicoPlayButton();
-			}
-		});
+			$('.PlayerPlayButton').first().click();
+		}
+		else {
+			if (nico_setting.just_scroll) justScroll();
+			if (nico_setting.auto_play) $('.PlayerPlayButton').first().click();
+		}
+		if (nico_setting.screen_click) {
+			addNicoPlayButton();
+			screen_click = nico_setting.screen_click;
+		}
 		
-		
-		// ニコニコは1秒くらい待たないとvideoが正常に取得できない
-		setTimeout(function() {
-			video = document.getElementsByTagName('video')[0];
-			
-			$(video).on('end', function() {
-				console.log('first ended');
-			});
+		getVideo().then((video) => {
+			console.log("loaded video element: ->" + video);
 			
 			$(video).on('ended', function() {
 				console.log("video ended");
@@ -118,7 +139,8 @@ $(function() {
 				// 終了後に非表示にしてるのでシークでボタンがまた表示されるように
 				$('#over-layer').show();
 			});
-		}, 1000);
+		});
+		
 	}
 	
 	if (document.domain == "www.youtube.com") {
@@ -134,7 +156,7 @@ $(function() {
 		$.each(list, (i, o) => {
 			li += `<button value="${i}">${o}</button>`;
 		});
-		li += '<button><div class="center"><span class="plus icon"></span><span class="add-list">新規リスト作成</span></div></button>'
+		li += '<button><div class="center"><span class="plus icon"></span><span class="add-list">新規リスト作成</span></div></button>';
 		return li;
 	}
 	
@@ -204,10 +226,9 @@ function addNicoPlayButton() {
 		</div>`
 	);
 	$('.controll-button').on('click', function() {
-		if (video) {
-			$(video.paused ? '.PlayerPlayButton' : '.PlayerPauseButton').click();
-		}
+		$('.PlayerPlayButton, .PlayerPauseButton').click();
 	});
+	
 }
 
 function getNicoData(group) {
