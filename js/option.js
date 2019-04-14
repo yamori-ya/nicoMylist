@@ -51,7 +51,7 @@ $(function() {
 		console.log("保存");
 		
 		// 各シートのIDが取得できていなかったら取得
-		if (!listSheetId || !infoSheetId) {
+		if (listSheetId == null || infoSheetId == null ) {
 			api.bookId = $('#bookId').val();
 			api.GetBookInfo().then((obj) => {
 				if (obj.error) { // シートへのアクセス失敗
@@ -64,7 +64,7 @@ $(function() {
 						case "info": infoSheetId = one.properties.sheetId; break;
 					}
 				});
-				if (!listSheetId || !infoSheetId) {
+				if (listSheetId == null || infoSheetId == null) {
 					location.href = '/option.html?status=error'+obj.error.code;
 					return;
 				}
