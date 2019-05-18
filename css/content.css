@@ -1,12 +1,16 @@
 /* 既存要素 */
-button.VideoStartButton {
-	display: none;
-}
 .PreVideoStartPremiumLinkContainer {
+	/*レジューム再生の促し*/
 	display: none;
 }
 
 
+
+#play.too-hover,
+#pause.too-hover {
+	opacity: 0;
+	cursor: none;
+}
 
 #over-layer {
 	position: absolute;

@@ -3,6 +3,7 @@ const PROP = [
 	"nico_full_screen",
 	"nico_setting",
 ];
+var hover_time, dilayTm;
 
 // videoを正常に取得できるまで500ms間隔で取得
 function getVideo() {
@@ -17,8 +18,6 @@ function getVideo() {
 			}
 			// videoロードが完了したら
 			if (video && $(video).prop('src')) {
-				console.log("loaded video element: ->");
-				console.log(video);
 				resolve(video);
 			}
 		}, 500);
@@ -66,20 +65,10 @@ Promise.all([
 		$('.MainContainer-commentPanel').prepend(nicoMylistArea);
 		$('.nicoMylist').append(buttons);
 		
-		
 		$('#nicoDeflist').one('click', function() {
 			$('.but_frame').removeClass('free');
 			$('.but_frame').addClass('added');
-			
-			sendMessage({id:"add_video", videoInfo:getNicoData("def")}).then((response) => {
-				if (response.result == "success") {
-					setLocalStorage({have_to_reload:true});
-					alert("追加完了");
-				} else if (response.result == "faild") {
-					alert("追加失敗");
-				}
-			});
-			
+			saveVideo("def");
 		});
 		
 		// 動画が見えるところまでスクロール
@@ -109,7 +98,8 @@ Promise.all([
 		}
 		
 		getVideo().then((video) => {
-			console.log("loaded video element: ->" + video);
+			console.log("loaded video element: ->");
+			console.log(video);
 			
 			$(video).on('ended', function() {
 				console.log("video ended");
@@ -154,7 +144,7 @@ Promise.all([
 	var popup_body = function(list) {
 		var li = "";
 		$.each(list, (i, o) => {
-			li += `<button value="${i}">${o}</button>`;
+			li += `<button class="folder" value="${i}">${o}</button>`;
 		});
 		li += '<button><div class="center"><span class="plus icon"></span><span class="add-list">新規リスト作成</span></div></button>';
 		return li;
@@ -177,12 +167,21 @@ Promise.all([
 		}
 		$(shift_dom).addClass("shift");
 		
+		var closePop = function() {
+			$(shift_dom).removeClass("shift");
+			$('#select-list-popup, #select-list-layer').hide();
+		};
+		
 		// マイリスト一覧作成
 		$('#select-list-body').empty();
 		getLocalStorage(["cache"]).then((value) => {
 			$('#select-list-body').append(
 				popup_body(value.cache ? value.cache.folder : ["def"])
 			);
+			$('#select-list-body button').on('click', function() {
+				saveVideo($(this).text());
+				closePop();
+			});
 		});
 		
 		// 画面外に出るようなら左側に表示
@@ -195,10 +194,7 @@ Promise.all([
 		$('#select-list-layer').height(popopLayerHeight);
 		
 		// ポップアップ以外 or ×ボタン押したら閉じる
-		$('#select-list-layer, #close-pop').on('click', () => {
-			$(shift_dom).removeClass("shift");
-			$('#select-list-popup, #select-list-layer').hide();
-		});
+		$('#select-list-layer, #close-pop').on('click', closePop);
 	});
 });
 
@@ -229,11 +225,34 @@ function addNicoPlayButton() {
 		$('.PlayerPlayButton, .PlayerPauseButton').click();
 	});
 	
+	// マウスを乗せて2秒で見えなくなる、動かすとまた見えるように
+	var onHov = function() {
+		hover_time = setTimeout(function() {
+			$('#play, #pause').addClass('too-hover');
+		}, 2000);
+	};
+	var outHov = function() {
+		$('#play, #pause').removeClass('too-hover');
+		clearTimeout(hover_time);
+	};
+	$('.controll-button').hover(onHov, outHov);
+	$('.controll-button').on('mousemove', function() {
+		$('#play, #pause').removeClass('too-hover');
+		clearTimeout(dilayTm);
+		dilayTm = setTimeout(onHov, 100);
+	}).on('mouseout', function() {
+		clearTimeout(dilayTm);
+		outHov();
+	});
+	
+	// 既存の再生ボタン非表示
+	$('button.VideoStartButton').css('display','none');
+	
 }
 
-function getNicoData(group) {
-	var json = JSON.parse($('#js-initial-watch-data').attr('data-api-data'));
+function saveVideo(folder) {
 	
+	var json = JSON.parse($('#js-initial-watch-data').attr('data-api-data'));
 	var now = new Date();
 	var yyyy = now.getFullYear(),
 		MM = (now.getMonth() + 1),
@@ -242,13 +261,23 @@ function getNicoData(group) {
 		mm = now.getMinutes(),
 		sc = now.getSeconds();
 	
-	return [
-		group, "index",
+	var data = [
+		folder, "index",
 		location.href,
 		json.video.title,
-		json.video.largeThumbnailURL,
+		json.video.largeThumbnailURL || json.video.thumbnailURL,
 		json.tags.map((tag) => tag.name).join(" "),
 		$('span.PlayerPlayTime-duration').text(),
 		"", `${yyyy}/${MM}/${dd} ${hh}:${mm}:${sc}`,
 	];
+	
+	sendMessage({id:"add_video", videoInfo:data})
+	.then((response) => {
+		if (response.result == "success") {
+			setLocalStorage({have_to_reload:true});
+			alert("追加完了");
+		} else if (response.result == "faild") {
+			alert("追加失敗");
+		}
+	});
 }
