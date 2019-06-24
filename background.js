@@ -40,11 +40,7 @@ chrome.runtime.onMessage.addListener(
 					sendResponse(value);
 				});
 			});
-			break
+			break;
 	}
 	return true;
-});
-
-chrome.browserAction.onClicked.addListener(function() {
-	chrome.tabs.create({url: 'mylist.html'});
 });
