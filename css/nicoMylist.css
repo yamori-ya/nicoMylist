@@ -5,12 +5,8 @@ html, body{
 	height:100%;
 	background: #F4F4F4;
 }
-input[type="checkbox"]  {
-	width: 20px;
-	height: 20px;
-	vertical-align: middle;
-}
 
+/* ######################## 画面構成 ######################## */
 header#header-fixed {
 	background-color:#444;
 	position:fixed;
@@ -18,20 +14,33 @@ header#header-fixed {
 	left: 0px;
 	width: 100%;
 	height: 35px;
+	z-index: 1000;
+}
+#content {
+	position: relative;
+	top: 50px;
+	margin: 35px auto 0 auto;
+	width: 1150px;
+	display: flex;
 }
 #folder {
-	position:fixed;
-	padding-top: 35px;
-	float: left;
+	width: 25%;
+	margin-right: 10px;
+	min-height: 500px;
+	height: fit-content;
+	background: #c3e7ff;
 }
 #mylist {
-	padding-left: 150px;
-	padding-top: 35px;
-	float: left;
+	width: 75%;
 }
+/* ######################## 画面構成 ######################## */
 
+
+
+/* ######################## ヘッダー ######################## */
 .menu {
 	float: right;
+	list-style: none;
 	display: flex;
 	margin: 0;
 }
@@ -46,97 +55,133 @@ header#header-fixed {
 .menu svg:hover {
 	fill: #00b0ff;
 }
+/* ######################## ヘッダー ######################## */
 
-table {
-	width: 800px;
-	/* border: solid 1px; */
-	/* border: solid 1px #000000; border-collapse: collapse; */
-	border: 0;
-	background: #faffff;
+
+
+/* ######################## フォルダ一覧 ######################## */
+#folder > ul {
+	font-size: 15px;
+	line-height: 25px;
 }
-button {
-	white-space: nowrap;
+/* ######################## フォルダ一覧 ######################## */
+
+
+
+/* ######################## リスト ######################## */
+ul.video {
+	float: left;
+	padding-left: 150px;
+	display: grid;
+	padding: 0;
+}
+ul.video > li {
+	list-style: none;
+	margin-bottom: 2em;
+	transition: 0.1s;
+	border-radius: 20px;
+	width: 850px;
+}
+ul.video > li > div {
+	display: flex;
+	padding: 3px 3px 6px 3px;
+	border-bottom: 1px solid #aaa;
+}
+.invisible {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.check-area {
+	transition: 0.2s;
+}
+.check-label:hover {
+	background: #e2e2ff;
+}
+.check-label {
+	display: flex;
+	width: 100%;
+	height: 100%;
 	cursor: pointer;
 }
-ul {
-	list-style: none;
+.check-box {
+	height: 18px;
+	width: 18px;
+	margin: auto 8px auto 8px;
+	border: 2.5px solid #ccc;
 }
-
-.title-row {
-	height: 45px;
+.check-box.check::after {
+	content: '';
+	display: block;
+	width: 88%;
+	height: 44%;
+	top: 4%;
+	left: 18%;
+	border-left: 3px solid #888;
+	border-bottom: 3px solid #888;
+	transform: rotate(-45deg);
 }
-.tags-row {
-	height: 50px;
-}
-.comment-row {
-	height: 30px;
-}
-.thumbnail-col {
-	vertical-align: top;
-}
-.thumbnail {
-	border: solid 2px #393F3F;
-}
-.title {
-	/* position: relative;   
-	top: 11px; */
-	width: 600px;
-	font-size: 1.2em;
-	font-weight: 600;
-}
-.play-here {
+.video-check {
 	display: none;
-	position: absolute;
-	left: 800px;
 }
-.comment-col {
-	vertical-align: top;
-	border:#C9CFCF solid 2px;
-	background: #F9FFFF;
+
+.handle-area {
+	position: relative;
+	top: 3.3em;
+	float: left;
+	margin-left: -30px;
+	position: relative;
+	left: 780px;
+	transition: 0.2s;
 }
-.comment {
-	width: 600px;
+
+.thumbnail-area {
+	padding-right: 0.8em;
+	margin: auto 0 auto 0;
 }
-.tags-row {
-	vertical-align: top;
-}
-.tags-row ul {
-  padding: 0;
-	width: 600px;
-	padding: 3px 0 0 3px;
-}
-.tags-row li {
-  list-style: none;
-  display: inline-block;
-  padding: 0 3px 0 3px;
-  margin: 0 0 5px 0;
-  border: solid 1px #bfbfbf;
-  border-radius: 10px;
-  white-space: nowrap;
-  background: white;
+.title-area {
+	font-size: 15px;
 	font-weight: bold;
-	color: #555;
+	padding: 3px 0 3px 0;
 }
-.check-area {
-	float: left;
+.title-area a {
+	text-decoration: none;
 }
+.title-area a:hover{
+	text-decoration: underline;
+}
+.tag-area {
+	width: 600px;
+	min-height: 53px;
+	padding: 2px 0 2px 0;
+}
+.tag-area li{
+	list-style: none;
+	display: inline-table;
+	padding: 0 5px 0 5px;
+	margin: 0 2px 5px 0;
+	border: solid 1px #bfbfbf;
+	border-radius: 10px;
+	white-space: nowrap;
+	background: white;
+}
+.tag-area a {
+}
+.comment-area {
+	border: #C9CFCF solid 2px;
+	background: #F9FFFF;
+	width: 600px;
+	height: 50px;
+	padding: 2px 0 0 5px;
+}
+/* ######################## リスト ######################## */
 
 
 
-.handle {
-	width: 40px;
-	height: 100px;
-	float: left;
-	
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
-}
 
 .sortable-chosen {
-  color: #fff;
-  background-color: #edb54c;
+	color: #fff;
+	background-color: #edb54c;
 }
 
 .scroll-btn {
@@ -170,44 +215,44 @@ ul {
 }
 
 #menuButton {
-  overflow: hidden;
-  display: block;
-  position: relative;
-  z-index: 0;
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
+	overflow: hidden;
+	display: block;
+	position: relative;
+	z-index: 0;
+	width: 30px;
+	height: 30px;
+	cursor: pointer;
 }
 
 #menuButton span,
 #menuButton::before,
 #menuButton::after {
-  display: block;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left:0;
-  right: 0;
-  width: 22px;
-  height: 2px;
+	display: block;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left:0;
+	right: 0;
+	width: 22px;
+	height: 2px;
 	border-radius: 10px;
-  margin: auto;
-  background: #000;
+	margin: auto;
+	background: #000;
 }
 #menuButton span {
-  overflow: hidden;
-  z-index: 1;
-  color: #000;
+	overflow: hidden;
+	z-index: 1;
+	color: #000;
 }
 #menuButton::before {
-  z-index: 2;
-  transform: translate(0, -7px);
-  content: "";
+	z-index: 2;
+	transform: translate(0, -7px);
+	content: "";
 }
 #menuButton::after {
-  z-index: 2;
-  transform: translate(0, 7px);
-  content: "";
+	z-index: 2;
+	transform: translate(0, 7px);
+	content: "";
 }
 
 
@@ -230,13 +275,13 @@ ul {
 	z-index: 51;
 	width: 30px; /*ローディングアイコンの横サイズ*/
 	height: 30px; /*ローディングアイコンの縦サイズ*/
-	border-radius: 50%;  /*CSS3で円を書く*/
-	border: 8px solid #fff;  /*円に○の白枠をつける*/
+	border-radius: 50%;	/*CSS3で円を書く*/
+	border: 8px solid #fff;	/*円に○の白枠をつける*/
 	border-right-color: transparent; /*円の右にC状の空きをつける*/
 	animation: spin 1s linear infinite; /*1秒毎にくるくる回転するアニメーション*/
 }
 @keyframes spin {
-	0% { transform: rotate(0deg);   opacity: 0.2; } /*0%の時は20％の透明度*/
-	50%  { transform: rotate(180deg); opacity: 1.0; } /*50%の時は透明度なし*/
-	100%   { transform: rotate(360deg); opacity: 0.2; } /*100%の時に20％の透明度に戻る*/
+	0% { transform: rotate(0deg);	 opacity: 0.2; } /*0%の時は20％の透明度*/
+	50%	{ transform: rotate(180deg); opacity: 1.0; } /*50%の時は透明度なし*/
+	100%	 { transform: rotate(360deg); opacity: 0.2; } /*100%の時に20％の透明度に戻る*/
 }

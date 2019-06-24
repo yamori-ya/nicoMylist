@@ -72,56 +72,47 @@ function createList(obj, name) {
 		var tags = "";
 		if (one.tag && one.tag.length > 0)
 		$.each(one.tag.split(' '), (i, t) => {
-			tags += `<li>${t}</li>`;
+			tags += `<li><span>${t}</span></li>`;
 		});
 		cnt++;
+		// 
+		// <div class="play-here">
+		// 	<button value="${cnt}">ここから連続再生</button>
+		// </div>
+		
+		// <div class="handle-area">
+		// 	<span id="menuButton" class="handle">
+		// 		<span></span>
+		// 	</span>
+		// </div>
 		str += `
 <li data-id="${cnt}" id="list-${cnt}">
-
-<div class="check-area">
-	<input type="checkbox" value="${one.line}" class="check_css"/>
-</div>
-
-	<table name="video-table" border="1">
-		<tr class="title-row">
-
-			<td class="thumbnail-col" rowspan="3" width="130px">
-				<div class="img-area">
-					<a target="_brank" href="${one.url}">
-						<img class="thumbnail" width="130px" src="${one.thumbnail}">
-					</a>
-				</div>
-			</td>
-			<td>
-				<div class="play-here">
-					<button value="${cnt}">ここから連続再生</button>
-				</div>
-				<div class="title">
-					<a target="_brank" href="${one.url}">${one.title}</a>
-				</div>
-			</td>
-			<td rowspan="3" width="32px">
-				<span id="menuButton" class="handle">
-					<span></span>
-				</span>
-			</td>
-		</tr>
-		<tr class="tags-row">
-			<td>
-				<ul>${tags}</ul>
-			</td>
-		</tr>
-		<tr class="comment-row">
-			<td class="comment-col">
-				<div class="comment">${one.comment}</div>
-			</td>
-		</tr>
-	</table>
-	<br>
-	<br>
-</li>`;
+	<div>
+		<div class="check-area">
+			<label class="check-label">
+				<input type="checkbox" class="video-check" value="${one.line}">
+				<div class="check-box"></div>
+			</label>
+		</div>
+		
+		<div class="thumbnail-area">
+			<a target="_brank" href="${one.url}">
+				<img class="thumbnail" width="130px" src="${one.thumbnail}">
+			</a>
+		</div>
+		<div>
+			<div class="title-area">
+				<a target="_brank" href="${one.url}">${one.title}</a>
+			</div>
+			<ul class="tag-area">${tags}</ul>
+			<div class="comment-area">${one.comment}</div>
+		</div>
+	</div>
+	
+</li>
+`;
 	});
-	$('#list').html(str);
+	$('#video').html(str);
 	
 	str = "";
 	$.each(obj.folder, (i, f) => {
@@ -129,6 +120,10 @@ function createList(obj, name) {
 		str += `<li><a href="/mylist.html?list=${name}">${name}</a></li>`;
 	})
 	$('#folder-list').html(str);
+	
+	$('.video-check').on('change', function() {
+		$(this).next().toggleClass('check');
+	});
 	
 	$('.play-here').each(function() {
 		$(this).find('button').on('click', function() {

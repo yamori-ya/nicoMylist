@@ -54,41 +54,6 @@
 	transform: scale(1.2);
 }
 
-
-.but_frame {
-	height: 24.9px;
-	width: 30px;
-	/* fill: #373737; */
-}
-.but_frame path {
-	transition: 0.3s;
-}
-.added {
-	cursor: default;
-	fill: #cccccc;
-}
-.free {
-	fill: #373737;
-}
-.free:hover {
-	fill: #e6485c;
-}
-.hide-button {
-	width: auto;
-	padding:0;
-	margin:0;
-	background:none;
-	border:0;
-	font-size:0;
-	line-height:0;
-	overflow:visible;
-	cursor:pointer;
-	outline:none;
-}
-
-
-
-
 #select-list-layer {
 	z-index: 50;
 	display: none;
