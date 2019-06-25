@@ -5,7 +5,9 @@ html, body{
 	height:100%;
 	background: #F4F4F4;
 }
-
+.test {
+	background: red;
+}
 /* ######################## 画面構成 ######################## */
 header#header-fixed {
 	background-color:#444;
@@ -93,7 +95,6 @@ ul.video > li > div {
 }
 
 .check-area {
-	transition: 0.2s;
 }
 .check-label:hover {
 	background: #e2e2ff;
@@ -126,13 +127,7 @@ ul.video > li > div {
 }
 
 .handle-area {
-	position: relative;
-	top: 3.3em;
-	float: left;
-	margin-left: -30px;
-	position: relative;
-	left: 780px;
-	transition: 0.2s;
+	margin: auto;
 }
 
 .thumbnail-area {
@@ -223,7 +218,6 @@ ul.video > li > div {
 	height: 30px;
 	cursor: pointer;
 }
-
 #menuButton span,
 #menuButton::before,
 #menuButton::after {

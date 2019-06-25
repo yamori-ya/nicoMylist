@@ -80,13 +80,9 @@ function createList(obj, name) {
 		// 	<button value="${cnt}">ここから連続再生</button>
 		// </div>
 		
-		// <div class="handle-area">
-		// 	<span id="menuButton" class="handle">
-		// 		<span></span>
-		// 	</span>
-		// </div>
+
 		str += `
-<li data-id="${cnt}" id="list-${cnt}">
+<li data-id="${cnt}" id="list-${cnt}" class="list">
 	<div>
 		<div class="check-area">
 			<label class="check-label">
@@ -106,6 +102,11 @@ function createList(obj, name) {
 			</div>
 			<ul class="tag-area">${tags}</ul>
 			<div class="comment-area">${one.comment}</div>
+		</div>
+		<div class="handle-area">
+			<span id="menuButton" class="handle">
+				<span></span>
+			</span>
 		</div>
 	</div>
 	
@@ -176,8 +177,31 @@ $(function() {
 	
 	// ボタン動作
 	$('#edit').on('click', () => {
-		// $('.check-area').toggle();
-		$('.check-area').animate({width: 'toggle'});
+		const startTime = Date.now(); // 開始時間
+		
+		var in_dom = [];
+		var out_dom = [];
+		
+		$('.list').each(function(i, e) {
+			var top = $(e).offset().top; // ターゲットの位置
+			var height = $(e).height();  // ターゲットの高さ
+			var win_h = $(window).height();
+			var scrl_top = $(window).scrollTop();
+			
+			var chk_dom = $(e).find('.check-area');
+			var hdl_dom = $(e).find('.handle-area');
+			
+			if (top <= win_h + scrl_top && top + height > scrl_top ) {
+				in_dom.push(chk_dom);
+				in_dom.push(hdl_dom);
+			} else {
+				out_dom.push(chk_dom);
+				out_dom.push(hdl_dom);
+			}
+		});
+		
+		$.each(out_dom, (i, e) => $(e).toggle());
+		$.each(in_dom,  (i, e) => $(e).animate({width: 'toggle'}, 400) );
 	});
 	$('#reload').click(() => {
 		loadBook();
