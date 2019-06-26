@@ -13,6 +13,7 @@ $(function() {
 	// 現ウインドアクティブダブへ命令
 	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 		
+		
 		var tab = tabs[0];
 		var nico = tab.url.match(/www\.nicovideo\.jp\/watch\/.+/);
 		
