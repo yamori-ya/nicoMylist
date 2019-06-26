@@ -1,4 +1,6 @@
-var data;
+var data; // 動画情報
+var play; // 連続再生中か
+
 
 $(function() {
 	
@@ -12,16 +14,14 @@ $(function() {
 	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 		
 		var tab = tabs[0];
-		var domain;
-		try {
-			domain = tab.url.match(/^https?:\/{2,}(.*?)(?:\/|\?|#|$)/)[1];
-		}
-		catch(e) {
-			console.log('ドメインの判別に失敗しました url: ' + tab.url);
-		}
+		var nico = tab.url.match(/www\.nicovideo\.jp\/watch\/.+/);
 		
-		if (domain != "www.nicovideo.jp") {
-			$('#opening').hide();
+		if (!nico) {
+			$('#video-info').hide();
+			
+			if (!play) { // ビデオページでなく、連続再生中でもない場合即マイリスト表示
+				chrome.tabs.create({url: 'mylist.html'});
+			}
 			return;
 		}
 		
