@@ -89,12 +89,8 @@ ul.video > li > div {
 	padding: 3px 3px 6px 3px;
 	border-bottom: 1px solid #aaa;
 }
-.invisible {
-	opacity: 0;
-	pointer-events: none;
-}
-
 .check-area {
+	width: 40px;
 }
 .check-label:hover {
 	background: #e2e2ff;
@@ -128,6 +124,7 @@ ul.video > li > div {
 
 .handle-area {
 	margin: auto;
+	transition: 400ms;
 }
 
 .thumbnail-area {
@@ -168,6 +165,17 @@ ul.video > li > div {
 	width: 600px;
 	height: 50px;
 	padding: 2px 0 0 5px;
+}
+
+.invisible {
+	opacity: 0;
+	pointer-events: none;
+}
+.speed-400 {
+	transition: 400ms;
+}
+.width0 {
+	width: 0px;
 }
 /* ######################## リスト ######################## */
 

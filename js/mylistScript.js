@@ -1,5 +1,7 @@
 var playTabId;
 var nowIndex;
+var list;
+
 function showLoad() {
 	$('#load-layer, #loader').show();
 }
@@ -75,12 +77,6 @@ function createList(obj, name) {
 			tags += `<li><span>${t}</span></li>`;
 		});
 		cnt++;
-		// 
-		// <div class="play-here">
-		// 	<button value="${cnt}">ここから連続再生</button>
-		// </div>
-		
-
 		str += `
 <li data-id="${cnt}" id="list-${cnt}" class="list">
 	<div>
@@ -108,12 +104,17 @@ function createList(obj, name) {
 				<span></span>
 			</span>
 		</div>
+		
+		<div class="play-here">
+			<button value="${cnt}">ここから連続再生</button>
+		</div>
 	</div>
 	
 </li>
 `;
 	});
 	$('#video').html(str);
+	list = $('.list')
 	
 	str = "";
 	$.each(obj.folder, (i, f) => {
@@ -177,31 +178,25 @@ $(function() {
 	
 	// ボタン動作
 	$('#edit').on('click', () => {
-		const startTime = Date.now(); // 開始時間
-		
-		var in_dom = [];
-		var out_dom = [];
-		
-		$('.list').each(function(i, e) {
+		var found_dom = false;
+		var win_h = $(window).height();
+		var scrl_top = $(window).scrollTop();
+		$(list).each(function(i, e) {
 			var top = $(e).offset().top; // ターゲットの位置
 			var height = $(e).height();  // ターゲットの高さ
-			var win_h = $(window).height();
-			var scrl_top = $(window).scrollTop();
 			
 			var chk_dom = $(e).find('.check-area');
 			var hdl_dom = $(e).find('.handle-area');
 			
 			if (top <= win_h + scrl_top && top + height > scrl_top ) {
-				in_dom.push(chk_dom);
-				in_dom.push(hdl_dom);
-			} else {
-				out_dom.push(chk_dom);
-				out_dom.push(hdl_dom);
-			}
+				found_dom = true;
+				$(chk_dom).addClass('speed-400');
+				$(hdl_dom).addClass('speed-400');
+			} else if (found_dom) return false;
 		});
-		
-		$.each(out_dom, (i, e) => $(e).toggle());
-		$.each(in_dom,  (i, e) => $(e).animate({width: 'toggle'}, 400) );
+		var removeSpeed = (e) => { $(e).removeClass('speed-400') }
+		$('.check-area' ).toggleClass('width0'   ).on('transitionend', removeSpeed);
+		$('.handle-area').toggleClass('invisible').on('transitionend', removeSpeed);
 	});
 	$('#reload').click(() => {
 		loadBook();
@@ -230,6 +225,9 @@ $(function() {
 	$('.scroll-btn > .bottom').on('click', () => {
 		scroll($(document).height());
 	});
+	
+	
+	// ########################連続再生関係########################
 	
 	// 動画終了通知を受け取って次の動画へ移動
 	chrome.runtime.onMessage.addListener(

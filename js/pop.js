@@ -13,11 +13,11 @@ $(function() {
 	// 現ウインドアクティブダブへ命令
 	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 		
-		
 		var tab = tabs[0];
 		var nico = tab.url.match(/www\.nicovideo\.jp\/watch\/.+/);
+		var yout = false;
 		
-		if (!nico) {
+		if (!nico && !yout) {
 			$('#video-info').hide();
 			
 			if (!play) { // ビデオページでなく、連続再生中でもない場合即マイリスト表示
