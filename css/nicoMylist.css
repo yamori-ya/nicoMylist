@@ -5,9 +5,6 @@ html, body{
 	height:100%;
 	background: #F4F4F4;
 }
-.test {
-	background: red;
-}
 /* ######################## 画面構成 ######################## */
 header#header-fixed {
 	background-color:#444;
@@ -71,24 +68,25 @@ header#header-fixed {
 
 
 /* ######################## リスト ######################## */
-ul.video {
+#video {
 	float: left;
 	padding-left: 150px;
 	display: grid;
 	padding: 0;
 }
-ul.video > li {
+#video > .list {
 	list-style: none;
 	margin-bottom: 2em;
 	transition: 0.1s;
 	border-radius: 20px;
 	width: 850px;
 }
-ul.video > li > div {
+.video {
 	display: flex;
 	padding: 3px 3px 6px 3px;
 	border-bottom: 1px solid #aaa;
 }
+
 .check-area {
 	width: 40px;
 }
@@ -166,17 +164,38 @@ ul.video > li > div {
 	height: 50px;
 	padding: 2px 0 0 5px;
 }
-
-.invisible {
+.play-here {
+	position: relative;
+	left: -80px;
+	margin-left: -36px; /*ボタンの幅*/
 	opacity: 0;
+	transition: 0.2s;
+}
+.video:hover .play-here {
+	opacity: 1;
+}
+.play-here button {
 	pointer-events: none;
+	border: none;
+	outline: none;
+	background: none;
+	padding: 0;
+	height: 36px;
+	width: 36px;
+	transition: 0.3s;
 }
-.speed-400 {
-	transition: 400ms;
+.play-here button:hover {
+	transform: scale(1.35);
 }
-.width0 {
-	width: 0px;
+.play-here svg {
+	pointer-events: auto;
+	cursor: pointer;
+	height: 36px;
+	width: 36px;
+	fill: #6a6a6a;
+	transition: 0.3s;
 }
+
 /* ######################## リスト ######################## */
 
 

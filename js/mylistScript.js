@@ -1,6 +1,5 @@
 var playTabId;
 var nowIndex;
-var list;
 
 function showLoad() {
 	$('#load-layer, #loader').show();
@@ -79,7 +78,7 @@ function createList(obj, name) {
 		cnt++;
 		str += `
 <li data-id="${cnt}" id="list-${cnt}" class="list">
-	<div>
+	<div class="video">
 		<div class="check-area">
 			<label class="check-label">
 				<input type="checkbox" class="video-check" value="${one.line}">
@@ -106,7 +105,9 @@ function createList(obj, name) {
 		</div>
 		
 		<div class="play-here">
-			<button value="${cnt}">ここから連続再生</button>
+			<button class="play-button" value="${cnt}">
+				<svg id="play-here"><use xlink:href="sprite.svg#icon-play_here"/></svg>
+			</button>
 		</div>
 	</div>
 	
@@ -114,7 +115,6 @@ function createList(obj, name) {
 `;
 	});
 	$('#video').html(str);
-	list = $('.list')
 	
 	str = "";
 	$.each(obj.folder, (i, f) => {
@@ -127,16 +127,14 @@ function createList(obj, name) {
 		$(this).next().toggleClass('check');
 	});
 	
-	$('.play-here').each(function() {
-		$(this).find('button').on('click', function() {
-			nowIndex = $(this).val();
-			console.log("button index: " + nowIndex);
-			
-			setLocalStorage({nico_full_screen:false});
-			chrome.tabs.create({url:getListUrl(nowIndex), active:true}, function(tab) {
-				playTabId = tab.id;
-				setLocalStorage({player_tab_id:playTabId});
-			});
+	$('.play-button').on('click', function() {
+		nowIndex = $(this).val();
+		console.log("button index: " + nowIndex);
+		
+		setLocalStorage({nico_full_screen:false});
+		chrome.tabs.create({url:getListUrl(nowIndex), active:true}, function(tab) {
+			playTabId = tab.id;
+			setLocalStorage({player_tab_id:playTabId});
 		});
 	});
 	// 各テーブルにマウスが乗ると再生ボタン表示
@@ -178,25 +176,7 @@ $(function() {
 	
 	// ボタン動作
 	$('#edit').on('click', () => {
-		var found_dom = false;
-		var win_h = $(window).height();
-		var scrl_top = $(window).scrollTop();
-		$(list).each(function(i, e) {
-			var top = $(e).offset().top; // ターゲットの位置
-			var height = $(e).height();  // ターゲットの高さ
-			
-			var chk_dom = $(e).find('.check-area');
-			var hdl_dom = $(e).find('.handle-area');
-			
-			if (top <= win_h + scrl_top && top + height > scrl_top ) {
-				found_dom = true;
-				$(chk_dom).addClass('speed-400');
-				$(hdl_dom).addClass('speed-400');
-			} else if (found_dom) return false;
-		});
-		var removeSpeed = (e) => { $(e).removeClass('speed-400') }
-		$('.check-area' ).toggleClass('width0'   ).on('transitionend', removeSpeed);
-		$('.handle-area').toggleClass('invisible').on('transitionend', removeSpeed);
+		
 	});
 	$('#reload').click(() => {
 		loadBook();
@@ -233,9 +213,9 @@ $(function() {
 	chrome.runtime.onMessage.addListener(
 		function(request, sender, sendResponse) {
 			if (request.id == "video_ended" && playTabId == sender.tab.id) {
-				var ur = getListUrl(++nowIndex);
-				console.log("next url: " + ur);
-				if (ur) chrome.tabs.update(playTabId, {url: ur}, function(tab) {});
+				var url = getListUrl(++nowIndex);
+				console.log("next url: " + url);
+				if (url) chrome.tabs.update(playTabId, {url: url}, function(tab) {});
 			}
 			return true;
 		}
