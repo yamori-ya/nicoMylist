@@ -8,7 +8,17 @@ function hideLoad() {
 	$('#load-layer, #loader').hide();
 }
 function getListUrl(index) {
-	return  $(`ul > #list-${index}`).find('a:eq(0)').attr('href');
+	$('.spinner').remove();
+	$(`#list-${index}`).find('.thumbnail-area').append(
+		'<div class="spinner">'
+		+ '<div class="rect1"></div>' 
+		+ '<div class="rect2"></div>'
+		+ '<div class="rect3"></div>'
+		+ '<div class="rect4"></div>'
+		+ '<div class="rect5"></div>'
+		+ '</div>');
+	scroll($(`#list-${index}`).offset().top-60);
+	return $(`#list-${index}`).find('a:eq(0)').attr('href');
 }
 function getCheckedLines() {
 	var checked_video = [];
@@ -137,13 +147,6 @@ function createList(obj, name) {
 			setLocalStorage({player_tab_id:playTabId});
 		});
 	});
-	// 各テーブルにマウスが乗ると再生ボタン表示
-	$('[name=video-table]').each(function() {
-		$(this).hover(
-			() => $(this).find('.play-here').toggle(),
-			() => $(this).find('.play-here').toggle()
-		);
-	});
 	
 	// リストが作成されたらぐるぐる非表示
 	hideLoad();
@@ -199,12 +202,10 @@ $(function() {
 		})
 	});
 	
-	$('.scroll-btn > .top').on('click', () => {
-		scroll(0);
-	});
-	$('.scroll-btn > .bottom').on('click', () => {
-		scroll($(document).height());
-	});
+	// 一番上、一番下ボタン
+	$('.scroll-btn > .top'   ).on('click', () => scroll(0) );
+	$('.scroll-btn > .bottom').on('click', () => scroll($(document).height()) );	
+	
 	
 	
 	// ########################連続再生関係########################
@@ -220,4 +221,11 @@ $(function() {
 			return true;
 		}
 	);
+	
+	chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
+		if (tabId == playTabId) {
+			console.log('closed player tab.');
+			$('.spinner').remove();
+		}
+	});
 });
