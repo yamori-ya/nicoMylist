@@ -22,9 +22,9 @@ $(function() {
 		// 設定系
 		if (local.nico_setting) {
 			let setting = local.nico_setting;
-			$('#autoPlay').prop('checked', setting.auto_play);
-			$('#justScroll').prop('checked', setting.just_scroll);
-			$('#screenClick').prop('checked', setting.screen_click);
+			$('#opt1-chk').prop('checked', setting.auto_play);
+			$('#opt2-chk').prop('checked', setting.just_scroll);
+			$('#opt3-chk').prop('checked', setting.screen_click);
 		}
 		if (sync.sheetIds) {
 			listSheetId = sync.sheetIds.list;
@@ -83,13 +83,23 @@ $(function() {
 		});
 		setLocalStorage({
 			nico_setting : {
-				auto_play:$('#autoPlay').prop('checked'),
-				just_scroll:$('#justScroll').prop('checked'),
-				screen_click:$('#screenClick').prop('checked'),
+				auto_play:   $('#opt1-chk').prop('checked'),
+				just_scroll: $('#opt2-chk').prop('checked'),
+				screen_click:$('#opt3-chk').prop('checked'),
 			}
 		});
 	});
 	
+	// 設定項目用dom生成
+	$('div.option-obj-check').each(function(i, e) {
+		var id = $(e).attr("id");
+		var cap = $(`<p class="caption">${$(e).text()}</p>`);
+		var tgl = $(`<div class="toggle"></div>`)
+			.append(`<input type="checkbox" class="tgl-chk" id="${id}-chk">`)
+			.append(`<label class="tgl-lbl" for="${id}-chk"></label>`);
+		$(e).text("");
+		$(e).append(cap).append(tgl);
+	});
 	
 	// $('#add_').click(function() {
 	// 

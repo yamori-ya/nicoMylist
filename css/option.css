@@ -1,0 +1,76 @@
+.option-obj-check {
+	width: 500px;
+	margin-bottom: 30px;
+	border-bottom: 1px dashed;
+	margin-left: auto;
+	margin-right: auto;
+}
+.caption {
+	display: inline-block;
+	vertical-align: top;
+	margin: 10px 0 6px 20px;
+	font-size: large;
+	font-family: "游ゴシック体", "Yu Gothic", YuGothic, sans-serif;
+}
+.toggle {
+	display: inline-block;
+	margin: 7px 20px 0 0;
+	position: relative; 
+	width: 80px;
+	float: right;
+}
+.tgl-chk {
+		display: none;
+}
+
+.tgl-lbl {
+	display: block; 
+	overflow: hidden; 
+	height: 30px; 
+	padding: 0;
+	margin: 0 auto;
+	border: 1px solid #888; 
+	border-radius: 10px;
+	background-color: #ddd;
+	transition: background-color 0.2s;
+}
+.tgl-lbl:before {
+	content: '';
+	display: block; 
+	width: 35px; 
+	margin: 0px;
+	background: #fff;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0px;
+	border: 1px solid #888; 
+	border-radius: 10px;
+	transition: 0.2s; 
+}
+.tgl-chk:not(:checked) + .tgl-lbl:after{
+	content: 'OFF';
+	position: relative;
+	left: 45px;
+	top: 6px;
+	color: #888;
+	font-weight: bold;
+	transition: 0.2s;
+}
+.tgl-chk:checked + .tgl-lbl:after{
+	content: 'ON';
+	position: relative;
+	left: 11px;
+	top: 6px;
+	color: #eee;
+	font-weight: bold;
+	transition: 0.2s; 
+}
+.tgl-chk:checked + .tgl-lbl {
+	background-color: #28ba43;
+}
+.tgl-chk:checked + .tgl-lbl,
+.tgl-chk:checked + .tgl-lbl:before {
+	 border-color: #28ba43;
+	left: calc(100% - 37px); 
+}
