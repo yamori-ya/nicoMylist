@@ -1,4 +1,27 @@
 $(function() {
+	
+	
+	// 設定項目用dom生成
+	$('div.option-obj').each(function(i, e) {
+		var id = $(e).attr("id");
+		var cap = $(`<p class="caption font">${$(e).text()}</p>`);
+		
+		var mod = "";
+		if ($(e).hasClass('text')) {
+			mod = $(`<div class="txt"></div>`)
+				.append(`<input type="text" class="val" id="${id}-txt">`);
+		}
+		else if ($(e).hasClass('check')) {
+			mod = $(`<div class="toggle"></div>`)
+				.append(`<input type="checkbox" class="val tgl-chk" id="${id}-chk">`)
+				.append(`<label class="tgl-lbl" for="${id}-chk"></label>`);
+		}
+		$(e).text("");
+		$(e).append(cap).append(mod);
+	});
+	
+	
+	
 	var listSheetId;
 	var infoSheetId;
 	
@@ -17,7 +40,7 @@ $(function() {
 		let sync = values[0];
 		let local = values[1];
 		
-		$('#bookId').val(sync.bookId);
+		$('#bookId-txt').val(sync.bookId);
 		
 		// 設定系
 		if (local.nico_setting) {
@@ -48,11 +71,18 @@ $(function() {
 	}
 	
 	$('#save').click(function() {
-		console.log("保存");
+		
+		if (!$(this).hasClass('active')) {
+			return;
+		}
+		
+		console.log("保存！");
 		
 		// 各シートのIDが取得できていなかったら取得
 		if (listSheetId == null || infoSheetId == null ) {
-			api.bookId = $('#bookId').val();
+			console.log("シートIDがないため取得");
+			
+			api.bookId = $('#bookId-txt').val();
 			api.GetBookInfo().then((obj) => {
 				if (obj.error) { // シートへのアクセス失敗
 					location.href = '/option.html?status=error'+obj.error.code;
@@ -79,7 +109,7 @@ $(function() {
 		
 		// 保存
 		setSyncStorage({
-			bookId:$('#bookId').val(),
+			bookId:$('#bookId-txt').val(),
 		});
 		setLocalStorage({
 			nico_setting : {
@@ -88,17 +118,14 @@ $(function() {
 				screen_click:$('#opt3-chk').prop('checked'),
 			}
 		});
+		$('#save').removeClass('active');
 	});
 	
-	// 設定項目用dom生成
-	$('div.option-obj-check').each(function(i, e) {
-		var id = $(e).attr("id");
-		var cap = $(`<p class="caption">${$(e).text()}</p>`);
-		var tgl = $(`<div class="toggle"></div>`)
-			.append(`<input type="checkbox" class="tgl-chk" id="${id}-chk">`)
-			.append(`<label class="tgl-lbl" for="${id}-chk"></label>`);
-		$(e).text("");
-		$(e).append(cap).append(tgl);
+	
+	
+	$('.val').on('change keyup', function() {
+		console.log("変更されました！");
+		$('#save').addClass('active');
 	});
 	
 	// $('#add_').click(function() {

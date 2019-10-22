@@ -1,16 +1,29 @@
-.option-obj-check {
+.font {
+	font-family: "游ゴシック体", "Yu Gothic", YuGothic, sans-serif;
+}
+.center {
+	width: fit-content;
+	margin: 0 auto 0 auto;
+}
+.option-obj {
 	width: 500px;
 	margin-bottom: 30px;
 	border-bottom: 1px dashed;
-	margin-left: auto;
-	margin-right: auto;
 }
 .caption {
 	display: inline-block;
 	vertical-align: top;
 	margin: 10px 0 6px 20px;
 	font-size: large;
-	font-family: "游ゴシック体", "Yu Gothic", YuGothic, sans-serif;
+}
+.txt {
+	display: inline-block;
+	float: right;
+	margin-top: 6px;
+}
+.txt input[type="text"]{
+	width: 380px;
+	height: 28px;
 }
 .toggle {
 	display: inline-block;
@@ -73,4 +86,22 @@
 .tgl-chk:checked + .tgl-lbl:before {
 	 border-color: #28ba43;
 	left: calc(100% - 37px); 
+}
+
+.save {
+	width: 65px;
+	height: 30px;
+	font-size: larger;
+	font-weight: 600;
+	border: solid 1px gray;
+	border-radius: 4px;
+	color: gray;
+	background: transparent;
+	outline: none;
+	transition: 100ms;
+}
+.active {
+	border-color: #ff4040;
+	color: #ff4040;
+	cursor: pointer;
 }
