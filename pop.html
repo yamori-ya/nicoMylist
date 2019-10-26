@@ -8,6 +8,10 @@
 <script type="text/javascript" src="js/function.js"></script>
 <script type="text/javascript" src="js/pop.js"></script>
 <style>
+body {
+	min-width: 300px;
+	min-height: 250px;
+}
 #show-mylist {
 	text-align: right;
 }
@@ -64,6 +68,29 @@
 	cursor: pointer;
 	outline: none;
 }
+
+#modal {
+  display: none;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+#modal-back {
+  background: rgba(0,0,0,0.8);
+  position: absolute;
+  height: 100vh;
+  width: 100%;
+}
+#modal-content {
+  position: absolute;
+  padding: 40px;
+  background: #fff;
+  transform: translate(-50%,-50%);
+  width: 60%;
+  top: 150px;
+}
 </style>
 </head>
 <body>
@@ -100,10 +127,37 @@
 					</div>
 				</button>
 			</span>
+			<button id="Modal-but">Modal</button>
 		</div>
 	</div>
 	
 	
+<div id="modal">
+  <div id="modal-back"></div>
+  <div id="modal-content">
+    <ul class="tree">
+      <li><input type="checkbox"><a href="">tree btn</a>
+        <ul>
+          <li><input type="checkbox"><a href="">tree btn</a>
+            <ul>
+              <li><input type="checkbox"><a href="">tree btn</a></li>
+              <li><input type="checkbox"><a href="">tree btn</a></li>
+            </ul>
+          </li>
+          <li><input type="checkbox"><a href="">tree btn</a></li>
+          <li><input type="checkbox"><a href="">tree btn</a></li>
+          <li><input type="checkbox"><a href="">tree btn</a></li>
+          <li><input type="checkbox"><a href="">tree btn</a></li>
+        </ul>
+      </li>
+      <li><input type="checkbox"><a href="">tree btn</a></li>
+      <li><input type="checkbox"><a href="">tree btn</a></li>
+      <li><input type="checkbox"><a href="">tree btn</a></li>
+      <li><input type="checkbox"><a href="">tree btn</a></li>
+    </ul>
+  </div>
+</div>
+
 	<!-- 再生中の動画コントローラ-->
 	<div id="playing">
 		

@@ -26,9 +26,9 @@ $(function() {
 			return;
 		}
 		
-		chrome.tabs.sendMessage(tab.id, 
-			{ id: "getVideoInfo" },
+		chrome.tabs.sendMessage(tab.id, { id: "getVideoInfo" },
 			function (response) {
+				if (!response) return;
 				data = response.data;
 				$('#title').text(data[3]);
 			}
@@ -50,5 +50,14 @@ $(function() {
 		
 	}); 
 	
+	$('#Modal-but').on('click', function() {
+	  $('#modal').fadeIn();
+	  return false;
+	});
+
+	$('#modal-back').on('click', function() {
+	  $('#modal').fadeOut();
+	  return false;
+	});
 	
 });
