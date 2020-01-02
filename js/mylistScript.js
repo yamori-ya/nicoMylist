@@ -32,7 +32,7 @@ function loadBook(bookId) {
 	showLoad();
 	$('#folder-list, #list').empty();
 	
-	const startTime = Date.now();
+	const sTime = Date.now();
 	
 	getSyncStorage(["bookId"])
 	.then((value) => {
@@ -44,28 +44,28 @@ function loadBook(bookId) {
 		return api.GetRange(["info!A:A", "list!A:I"]);
 	})
 	.then((obj) => {
+		console.dir(obj);
 		if (obj.error) { // シートへのアクセス失敗
 			location.href = '/option.html?status=error'+obj.error.code;
 			return;
 		}
-		var list = [];
-		$.each(obj.valueRanges[1].values, (i, one) => {
-			list.push({
-				line:i, folder:one[0], index:one[1], url:one[2], title:one[3],
-				thumbnail:one[4], tag:one[5], time:one[6], comment:one[7], instm:one[8]
-			});
-		});
+		
 		cache_data = {
 			folder: obj.valueRanges[0].values.flat(),
-			data: list
+			data: obj.valueRanges[1].values.map((val, i) => {
+				return {
+					line:i, folder:val[0], index:val[1], url:val[2], title:val[3],
+					thumbnail:val[4], tag:val[5], time:val[6], comment:val[7], instm:val[8]
+				};
+			});
 		};
 		setLocalStorage({
-			cache:cache_data,
-			have_to_reload:false
+			cache: cache_data,
+			have_to_reload: false
 		});
 		createList(cache_data, params["list"]);
 		const endTime = Date.now();
-		console.log("load book time: " + (endTime - startTime));
+		console.log("load book time: " + (endTime - sTime));
 	});
 }
 
@@ -95,7 +95,7 @@ function createList(obj, name) {
 		
 		<div class="thumbnail-area">
 			<a target="_brank" href="${one.url}">
-				<img class="thumbnail" width="130px" src="${one.thumbnail}">
+				<img class="thumbnail" src="${one.thumbnail}">
 			</a>
 		</div>
 		<div>
@@ -145,8 +145,7 @@ function createList(obj, name) {
 		});
 	});
 	
-	const endTime = Date.now();
-	console.log("create list time: " + (endTime - startTime));
+	console.log("create list time: " + (Date.now() - startTime));
 	
 	// リストが作成されたらぐるぐる非表示
 	hideLoad();

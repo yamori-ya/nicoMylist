@@ -104,7 +104,7 @@ class SheetApi
 					
 					return fetch(url, request)
 					.then((response) => {
-						console.dir(response.json());
+						console.dir(response);
 						return resolve(response.json()); 
 					});
 				}

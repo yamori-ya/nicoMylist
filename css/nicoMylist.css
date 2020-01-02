@@ -32,6 +32,9 @@ header#header-fixed {
 #mylist {
 	width: 75%;
 }
+.hidden-area {
+	display: none;
+}
 /* ######################## 画面構成 ######################## */
 
 
@@ -128,6 +131,9 @@ header#header-fixed {
 .thumbnail-area {
 	padding-right: 0.8em;
 	margin: auto 0 auto 0;
+}
+.thumbnail {
+	width: 130px;
 }
 .title-area {
 	font-size: 15px;
