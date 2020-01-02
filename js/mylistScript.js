@@ -9,16 +9,12 @@ function hideLoad() {
 }
 function getListUrl(index) {
 	$('.spinner').remove();
-	$(`#list-${index}`).find('.thumbnail-area').append(
-		'<div class="spinner">'
-		+ '<div class="rect1"></div>' 
-		+ '<div class="rect2"></div>'
-		+ '<div class="rect3"></div>'
-		+ '<div class="rect4"></div>'
-		+ '<div class="rect5"></div>'
-		+ '</div>');
-	scroll($(`#list-${index}`).offset().top-60);
-	return $(`#list-${index}`).find('a:eq(0)').attr('href');
+	var spinner = $("#spinner").clone().addClass('spinner');
+	
+	var item = $(`#list-${index}`);
+	item.find('.thumbnail-area').append(spinner);
+	scroll(item.offset().top-60);
+	return item.find('a:eq(0)').attr('href');
 }
 function getCheckedLines() {
 	var checked_video = [];
@@ -74,6 +70,7 @@ function loadBook(bookId) {
 }
 
 function createList(obj, name) {
+	const startTime = Date.now();
 	var str = "";
 	var cnt = 0;
 	$.each(obj.data, function(i, one) {
@@ -147,6 +144,9 @@ function createList(obj, name) {
 			setLocalStorage({player_tab_id:playTabId});
 		});
 	});
+	
+	const endTime = Date.now();
+	console.log("create list time: " + (endTime - startTime));
 	
 	// リストが作成されたらぐるぐる非表示
 	hideLoad();

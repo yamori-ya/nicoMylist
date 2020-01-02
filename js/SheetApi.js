@@ -101,10 +101,12 @@ class SheetApi
 						'Content-Type': 'application/json; charset=UTF-8'
 					}
 					request.contentType = 'json';
-					console.log("request.body:" + request.body);
+					
 					return fetch(url, request)
-					.then( (response) => { return response.json(); } )
-					.then( (data) => { console.dir(data); return resolve(data); } );
+					.then((response) => {
+						console.dir(response.json());
+						return resolve(response.json()); 
+					});
 				}
 			});
 		});
