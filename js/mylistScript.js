@@ -57,7 +57,7 @@ function loadBook(bookId) {
 					line:i, folder:val[0], index:val[1], url:val[2], title:val[3],
 					thumbnail:val[4], tag:val[5], time:val[6], comment:val[7], instm:val[8]
 				};
-			});
+			})
 		};
 		setLocalStorage({
 			cache: cache_data,
@@ -79,9 +79,8 @@ function createList(obj, name) {
 		
 		var tags = "";
 		if (one.tag && one.tag.length > 0)
-		$.each(one.tag.split(' '), (i, t) => {
-			tags += `<li><span>${t}</span></li>`;
-		});
+		tags = one.tag.split(' ').map(t => `<li><span>${t}</span></li>`).join('');
+		
 		cnt++;
 		str += `
 <li data-id="${cnt}" id="list-${cnt}" class="list">
@@ -94,21 +93,15 @@ function createList(obj, name) {
 		</div>
 		
 		<div class="thumbnail-area">
-			<a target="_brank" href="${one.url}">
-				<img class="thumbnail" src="${one.thumbnail}">
-			</a>
+			<a href="${one.url}"><img src="${one.thumbnail}"></a>
 		</div>
 		<div>
-			<div class="title-area">
-				<a target="_brank" href="${one.url}">${one.title}</a>
-			</div>
+			<div class="title-area"><a href="${one.url}">${one.title}</a></div>
 			<ul class="tag-area">${tags}</ul>
 			<div class="comment-area">${one.comment}</div>
 		</div>
 		<div class="handle-area">
-			<span id="menuButton" class="handle">
-				<span></span>
-			</span>
+			<span id="menuButton" class="handle"><span></span></span>
 		</div>
 		
 		<div class="play-here">
@@ -117,23 +110,25 @@ function createList(obj, name) {
 			</button>
 		</div>
 	</div>
-	
-</li>
-`;
+</li>`;
 	});
 	$('#video').html(str);
 	
-	str = "";
-	$.each(obj.folder, (i, f) => {
-		var name = decodeURI(f);
-		str += `<li><a href="/mylist.html?list=${name}">${name}</a></li>`;
-	})
-	$('#folder-list').html(str);
 	
+	// マイリスト一覧作成
+	$('#folder-list').html(
+		obj.folder.map((f) => {
+			var name = decodeURI(f);
+			return `<li><a target="_self" href="/mylist.html?list=${name}">${name}</a></li>`;
+		}).join('')
+	);
+	
+	// チェックボックスの動作
 	$('.video-check').on('change', function() {
 		$(this).next().toggleClass('check');
 	});
 	
+	// 連続再生ボタンの動作
 	$('.play-button').on('click', function() {
 		nowIndex = $(this).val();
 		console.log("button index: " + nowIndex);
