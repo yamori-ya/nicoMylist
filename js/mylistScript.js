@@ -179,12 +179,23 @@ $(function() {
 		loadBook();
 	});
 	$('#option').click(() => {
-		location.href = '/option.html';
+		chrome.tabs.create({url:'/option.html', active:true}, null);
 	});
 	
+	// $('#move').on('click', () => {
+	// 	$('.modal').show('500');
+	// });
+	// $('.modal-back').on('click', function() {
+	// 	$('.modal').hide('500');
+	// });
+	
+	
 	$('#delete').click(() => {
-		showLoad();
+		
 		var checked_video = getCheckedLines();
+		if (checked_video.length == 0 || !window.confirm(checked_video.length + "件 削除します")) return false;
+		
+		showLoad();
 		console.log("delete line index: " + checked_video);
 		getSyncStorage(["bookId", "sheetIds"])
 		.then((value) => {

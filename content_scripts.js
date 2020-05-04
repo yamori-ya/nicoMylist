@@ -1,4 +1,6 @@
 
+console.log("load content_script");
+
 // 動画情報
 var video_info;
 
@@ -142,7 +144,16 @@ Promise.all([
 	}
 	
 	if (document.domain == "www.youtube.com") {
-		
+		getVideo().then((video) => {
+			console.log("loaded video element: ->");
+			console.log(video);
+			
+			$(video).on('ended', function() {
+				console.log("video ended");
+				// マイリストタブへ動画終了を通知
+				sendMessage({id:"video_ended"});
+			});
+		});
 	}
 	
 	
