@@ -85,16 +85,11 @@ function createList(obj, name) {
 		str += `
 <li data-id="${cnt}" id="list-${cnt}" class="list">
 	<div class="video">
-		<div class="check-area">
-			<label class="check-label">
-				<input type="checkbox" class="video-check" value="${one.line}">
-				<div class="check-box"></div>
-			</label>
-		</div>
-		
-		<div class="thumbnail-area">
-			<a href="${one.url}"><img src="${one.thumbnail}"></a>
-		</div>
+		<label class="check-label">
+			<input type="checkbox" class="video-check" value="${one.line}">
+			<div class="check-box"></div>
+		</label>
+		<a class="thumbnail-area" href="${one.url}"><img src="${one.thumbnail}"></a>
 		<div>
 			<div class="title-area"><a href="${one.url}">${one.title}</a></div>
 			<ul class="tag-area">${tags}</ul>
@@ -126,6 +121,7 @@ function createList(obj, name) {
 	// チェックボックスの動作
 	$('.video-check').on('change', function() {
 		$(this).next().toggleClass('check');
+		$(this).parents('.video').toggleClass('video-checked');
 	});
 	
 	// 連続再生ボタンの動作
@@ -211,6 +207,11 @@ $(function() {
 	$('.scroll-btn > .top'   ).on('click', () => scroll(0) );
 	$('.scroll-btn > .bottom').on('click', () => scroll($(document).height()) );	
 	
+	
+	// ######################## 検索 ########################
+	$('.search').on('submit', function() {
+		alert('test');
+	})
 	
 	
 	// ########################連続再生関係########################
