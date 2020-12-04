@@ -112,7 +112,7 @@ function createList(obj, listName, findStr = "") {
 	$('#folder-list').html(
 		obj.folder.map((f) => {
 			var name = decodeURI(f);
-			return `<li><a target="_self" href="/mylist.html?list=${name}">${name}</a></li>`;
+			return `<li><a target="_self" href="./mylist.html?list=${name}">${name}</a></li>`;
 		}).join('')
 	);
 	

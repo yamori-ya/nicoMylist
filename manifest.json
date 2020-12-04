@@ -9,7 +9,7 @@
   },
   
   "content_scripts": [ {
-      "js": [ "js/jquery-3.3.1.min.js", "js/SheetApi.js", "js/function.js", "content.js" ],
+      "js": [ "js/jquery-3.3.1.min.js", "js/SheetApi.js", "js/function.js", "js/content.js" ],
       "css": [ "css/content.css" ],
       "matches": [ 
         "http://*.nicovideo.jp/watch/*",
@@ -20,14 +20,14 @@
    
   "background": {
     "scripts": [
-       "js/function.js", "background.js", "js/SheetApi.js"
+       "js/function.js", "js/background.js", "js/SheetApi.js"
     ],
     "persistent": false
   },
   "browser_action": {
     "default_icon": {
     },
-    "default_popup": "pop.html"
+    "default_popup": "html/pop.html"
   },
    
   "permissions": [
@@ -37,7 +37,7 @@
     "tabs"
   ],
   "options_ui": {
-    "page": "option.html",
+    "page": "html/option.html",
     "open_in_tab": true
   },
   

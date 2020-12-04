@@ -5,7 +5,7 @@ var play; // 連続再生中か
 $(function() {
 	
 	$('#show-mylist button').on('click', function() {
-		chrome.tabs.create({url: 'mylist.html'});
+		chrome.tabs.create({url: '../html/mylist.html'});
 	});
 	
 	
@@ -21,7 +21,7 @@ $(function() {
 			$('#video-info').hide();
 			
 			if (!play) { // ビデオページでなく、連続再生中でもない場合即マイリスト表示
-				chrome.tabs.create({url: 'mylist.html'});
+				chrome.tabs.create({url: '../html/mylist.html'});
 			}
 			return;
 		}
