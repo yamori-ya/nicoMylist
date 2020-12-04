@@ -1,7 +1,7 @@
 /**
  * urlからパラメータ取得
  */
-function getUrlParams() {
+function getUrlParams(debug = false) {
 	var params = [];
 	if (location.search != "") {
 		$.each(location.search.substring(1).split("&"), function(i, one) {
@@ -9,6 +9,7 @@ function getUrlParams() {
 			params[p[0]] = decodeURI(p[1]);
 		});
 	}
+	if (debug) console.log(params);
 	return params;
 }
 

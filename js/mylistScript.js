@@ -1,12 +1,12 @@
 var playTabId;
 var nowIndex;
 
-function showLoad() {
-	$('#load-layer, #loader').show();
-}
-function hideLoad() {
-	$('#load-layer, #loader').hide();
-}
+var showLoad = () => $('#load-layer, #loader').show();
+var hideLoad = () => $('#load-layer, #loader').hide();
+
+var getCheckedLines = () => $('.video-check:checked').map((i,e) => $(e).val()*1+1);
+
+
 function getListUrl(index) {
 	$('.spinner').remove();
 	var spinner = $("#spinner").clone().addClass('spinner');
@@ -15,13 +15,6 @@ function getListUrl(index) {
 	item.find('.thumbnail-area').append(spinner);
 	scroll(item.offset().top-60);
 	return item.find('a:eq(0)').attr('href');
-}
-function getCheckedLines() {
-	var checked_video = [];
-	$("input[type='checkbox']").filter(":checked").each((i,e) => {
-		checked_video.push(Number($(e).val())+1);
-	});
-	return checked_video;
 }
 function scroll(height) {
 	$('body,html').animate({ scrollTop: height }, 300);
@@ -69,31 +62,36 @@ function loadBook(bookId) {
 	});
 }
 
-function createList(obj, name) {
+function createList(obj, listName, findStr = "") {
 	const startTime = Date.now();
 	var str = "";
 	var cnt = 0;
-	$.each(obj.data, function(i, one) {
-		if (one.folder != name)
+	$.each(obj.data, function(i, item) {
+		if (item.folder != listName)
 			return true;
 		
+		if (findStr.length > 0) {
+			if (item.title.indexOf(findStr) == -1 && 
+				item.tag.indexOf(findStr) == -1) return true;
+		}
+		
 		var tags = "";
-		if (one.tag && one.tag.length > 0)
-		tags = one.tag.split(' ').map(t => `<li><span>${t}</span></li>`).join('');
+		if (item.tag && item.tag.length > 0)
+		tags = item.tag.split(' ').map(t => `<li><span>${t}</span></li>`).join('');
 		
 		cnt++;
 		str += `
 <li data-id="${cnt}" id="list-${cnt}" class="list">
 	<div class="video">
 		<label class="check-label">
-			<input type="checkbox" class="video-check" value="${one.line}">
+			<input type="checkbox" class="video-check" value="${item.line}">
 			<div class="check-box"></div>
 		</label>
-		<a class="thumbnail-area" href="${one.url}"><img src="${one.thumbnail}"></a>
+		<a class="thumbnail-area" href="${item.url}"><img src="${item.thumbnail}"></a>
 		<div>
-			<div class="title-area"><a href="${one.url}">${one.title}</a></div>
+			<div class="title-area"><a href="${item.url}">${item.title}</a></div>
 			<ul class="tag-area">${tags}</ul>
-			<div class="comment-area">${one.comment}</div>
+			<div class="comment-area">${item.comment}</div>
 		</div>
 		<div class="handle-area">
 			<span id="menuButton" class="handle"><span></span></span>
@@ -156,12 +154,10 @@ $(function() {
 	getLocalStorage(["cache", "have_to_reload"])
 	.then((value) => {
 		if (value.cache && !value.have_to_reload) {
-			// キャッシュからロード
 			console.log("load cache");
-			createList(value.cache, params["list"]);
+			createList(value.cache, params["list"], params["findStr"]);
 		}
 		else {
-			// ブックからロード
 			console.log("load sheet");
 			loadBook();
 		}
@@ -171,10 +167,10 @@ $(function() {
 	$('#edit').on('click', () => {
 		
 	});
-	$('#reload').click(() => {
+	$('#reload').on('click', () => {
 		loadBook();
 	});
-	$('#option').click(() => {
+	$('#option').on('click', () => {
 		chrome.tabs.create({url:'/option.html', active:true}, null);
 	});
 	
@@ -206,12 +202,6 @@ $(function() {
 	// 一番上、一番下ボタン
 	$('.scroll-btn > .top'   ).on('click', () => scroll(0) );
 	$('.scroll-btn > .bottom').on('click', () => scroll($(document).height()) );	
-	
-	
-	// ######################## 検索 ########################
-	$('.search').on('submit', function() {
-		alert('test');
-	})
 	
 	
 	// ########################連続再生関係########################

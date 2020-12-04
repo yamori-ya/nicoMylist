@@ -23,14 +23,16 @@ header#header-fixed {
 	display: flex;
 }
 #folder {
-	width: 25%;
-	margin-right: 10px;
+	position: fixed;
+	width: 285px;
 	min-height: 500px;
 	height: fit-content;
 	background: #dcdcdc;
 }
 #mylist {
-	width: 75%;
+	position: absolute;
+	right: 0;
+	width: 860px;
 }
 .hidden-area {
 	display: none;
