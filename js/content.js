@@ -1,11 +1,19 @@
-
-console.log("load content_script");
-
 // 動画情報
 var video_info;
 
+function __css__() {/*
+.PreVideoStartPremiumLinkContainer {
+	display: none;
+}
+*/}
 
 if (document.domain == "www.nicovideo.jp") {
+	
+	// スタイル設定
+	var css = (__css__).toString().match(/[^]*\/\*([^]*)\*\/\}$/)[1]
+	$('head').append(`<style id="nico" type="text/css">${css}</style>`)
+	
+	
 	var json = JSON.parse($('#js-initial-watch-data').attr('data-api-data'));
 	var now = new Date();
 	var yyyy = now.getFullYear(),
@@ -29,7 +37,7 @@ else if (document.domain == "www.youtube.com") {
 	
 }
 
-// popでデータ受け取りテスト
+// popへ動画情報送信
 chrome.runtime.onMessage.addListener(
 	function(request, sender, sendResponse) {
 		if (request.id == "getVideoInfo") {
@@ -45,42 +53,30 @@ const PROP = [
 	"nico_full_screen",
 	"nico_setting",
 ];
-var hover_time, dilayTm;
 
 // videoを正常に取得できるまで500ms間隔で取得
 function getVideo() {
 	return new Promise(function(resolve, reject) {
-		setTimeout(function() {
-			console.log("video load");
-			var video = document.getElementsByTagName('video')[0];
-			
-			// 正常にvideo取得できなかったらもう一度
-			if (!video || !$(video).prop('src')) {
-				getVideo().then((video) => resolve(video));
-			}
-			// videoロードが完了したら
-			if (video && $(video).prop('src')) {
-				resolve(video);
-			}
-		}, 500);
-	});
+		var iv = setInterval(function() {
+			var video = $('video')[0];
+			if (!video || !$(video).prop('src')) 
+				return;
+			clearInterval(iv);
+			resolve(video);
+		}, 500)
+	})
 }
 
 Promise.all([
 	getLocalStorage(PROP),
 	sendMessage({id:"get_current_tab"}),
-	new Promise(function(resolve, reject) {
-		$(function() { resolve(); });
-	}),
 ]).then((values) => {
 	
 	var storage = values[0];
 	var nico_setting = storage.nico_setting;
 	var currentTabId = values[1].tab.id;
-	var popopLayerHeight;
 	
 	if (document.domain == "www.nicovideo.jp") {
-		popopLayerHeight = $('#js-app').height();
 		
 		// 動画が見えるところまでスクロール
 		var justScroll = function() {
@@ -89,55 +85,43 @@ Promise.all([
 			$(window).first().scrollTop(pos);
 		}
 		
+		// 連続再生時
 		if (storage.player_tab_id == currentTabId) {
 			if (storage.nico_full_screen) {
 				// 前回動画終了時にフルスクリーンだったら今動画もフルスクリーンに
 				$('.EnableFullScreenButton').first().click();
-			}
-			else {
+			} else {
 				justScroll();
 			}
 			$('.PlayerPlayButton').first().click();
 		}
+		// 通常再生時
 		else {
 			if (nico_setting.just_scroll) justScroll();
-			if (nico_setting.auto_play) $('.PlayerPlayButton').first().click();
-		}
-		if (nico_setting.screen_click) {
-			addNicoPlayButton();
 		}
 		
 		getVideo().then((video) => {
-			console.log("loaded video element: ->");
-			console.log(video);
-			
+			$('.PlayerContainer').focus();
 			$(video).on('ended', function() {
 				console.log("video ended");
 				// 現在動画がフルスクリーンだったら次もフルスクリーンにするために状態を保存
 				setLocalStorage({nico_full_screen:$('body').hasClass('is-fullscreen')});
 				// マイリストタブへ動画終了を通知
 				sendMessage({id:"video_ended"});
-				
-				// 再生終了したらover-layerを非表示
-				$('#over-layer').hide();
 			});
 			
+			// 画面をクリックで再生停止
 			$(video).on('pause', function() {
-				console.log('pause');
-				$('#play.controll-button').show();
-				$('#pause.controll-button').hide();
+				$('#pause').css('visibility', 'visible').toggleClass('click')
+				$('#play' ).css('visibility', 'hidden' ).toggleClass('click')
 			});
 			$(video).on('play', function() {
-				console.log('play');
-				$('#play.controll-button').hide();
-				$('#pause.controll-button').show();
-				// ループ等で再生再開したとき用にover-layerを再表示
-				$('#over-layer').show();
-			});
-			$(video).on('seeked', function() {
-				console.log('seeked');
-				// 終了後に非表示にしてるのでシークでボタンがまた表示されるように
-				$('#over-layer').show();
+				if (!$('#over-layer')[0]) {
+					nicoScreenClick2Play();
+				} else {
+					$('#pause').css('visibility', 'hidden' ).toggleClass('click')
+					$('#play' ).css('visibility', 'visible').toggleClass('click')
+				}
 			});
 		});
 		
@@ -145,8 +129,6 @@ Promise.all([
 	
 	if (document.domain == "www.youtube.com") {
 		getVideo().then((video) => {
-			console.log("loaded video element: ->");
-			console.log(video);
 			
 			$(video).on('ended', function() {
 				console.log("video ended");
@@ -155,82 +137,19 @@ Promise.all([
 			});
 		});
 	}
-	
-	
-	
-	
-	// フォルダ選択ポップアップ挿入
-	var popup_body = function(list) {
-		var li = "";
-		$.each(list, (i, o) => {
-			li += `<button class="folder" value="${i}">${o}</button>`;
-		});
-		li += '<button><div class="center"><span class="plus icon"></span><span class="add-list">新規リスト作成</span></div></button>';
-		return li;
-	}
-	
-	// ポップアップ部分挿入
-	$('body').append(
-		`<div id="select-list-layer"></div>
-		<div id="select-list-popup">
-		<div id="close-pop" class="close icon"></div>
-		<div id="select-list-title" style="padding:10px;">マイリストを選択</div>
-		<div id="select-list-body"></div>
-		</div>`);
-	// フォルダ選択ボタンの動作
-	$('#select-list').on('click', (e) => {
-		// スクロールバーを消すときのズレを解消
-		var shift_dom = "body";
-		if (document.domain == "www.nicovideo.jp") {
-			shift_dom += ", #siteHeaderInner, #siteHeader";
-		}
-		$(shift_dom).addClass("shift");
-		
-		var closePop = function() {
-			$(shift_dom).removeClass("shift");
-			$('#select-list-popup, #select-list-layer').hide();
-		};
-		
-		// マイリスト一覧作成
-		$('#select-list-body').empty();
-		getLocalStorage(["cache"]).then((value) => {
-			$('#select-list-body').append(
-				popup_body(value.cache ? value.cache.folder : ["def"])
-			);
-			$('#select-list-body button').on('click', function() {
-				saveVideo($(this).text());
-				closePop();
-			});
-		});
-		
-		// 画面外に出るようなら左側に表示
-		var popX = e.clientX, popY = e.clientY;
-		if (e.clientX + 350 > $(window).width()) {
-			popX = e.clientX - 350;
-		}
-		$('#select-list-popup').css({top:popY, left:popX});
-		$('#select-list-popup, #select-list-layer').toggle();
-		$('#select-list-layer').height(popopLayerHeight);
-		
-		// ポップアップ以外 or ×ボタン押したら閉じる
-		$('#select-list-layer, #close-pop').on('click', closePop);
-	});
 });
 
 
-
-function addNicoPlayButton() {
-	// play/pauseボタン
+function nicoScreenClick2Play() {
 	$('.InView.VideoContainer').append(`
 		<div id="over-layer">
-			<div id="hover-layer"></div>
-			<div id="play" class="controll-button">
+			<div id="play" class="controll-button click">
 				<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 13.229 13.229">
 					<path d="M13.23 6.615a6.615 6.615 0 0 1-6.615 6.614A6.615 6.615 0 0 1 0 6.615 6.615 6.615 0 0 1 6.615 0a6.615 6.615 0 0 1 6.614 6.615z"/>
 					<path d="M10.054 6.615l-5.16 2.978V3.636z" fill="#fff"/>
 				</svg>
 			</div>
-			<div id="pause" class="controll-button" style="display: none;">
+			<div id="pause" class="controll-button" style="visibility:hidden">
 				<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 13.229 13.229">
 					<g transform="translate(0 -283.77)">
 						<circle cx="6.615" cy="290.385" r="6.615"/>
@@ -239,31 +158,7 @@ function addNicoPlayButton() {
 				</svg>
 			</div>
 		</div>`
-	);
-	$('.controll-button').on('click', function() {
+	).on('click', () => {
 		$('.PlayerPlayButton, .PlayerPauseButton').click();
-	});
-	
-	// マウスを乗せて2秒で見えなくなる、動かすとまた見えるように
-	var onHov = function() {
-		hover_time = setTimeout(function() {
-			$('#play, #pause').addClass('too-hover');
-		}, 2000);
-	};
-	var outHov = function() {
-		$('#play, #pause').removeClass('too-hover');
-		clearTimeout(hover_time);
-	};
-	$('.controll-button').hover(onHov, outHov);
-	$('.controll-button').on('mousemove', function() {
-		$('#play, #pause').removeClass('too-hover');
-		clearTimeout(dilayTm);
-		dilayTm = setTimeout(onHov, 100);
-	}).on('mouseout', function() {
-		clearTimeout(dilayTm);
-		outHov();
-	});
-	
-	// 既存の再生ボタン非表示
-	$('button.VideoStartButton').css('display','none');
+	});	
 }
