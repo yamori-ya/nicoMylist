@@ -1,18 +1,7 @@
 // 動画情報
 var video_info;
 
-function __css__() {/*
-.PreVideoStartPremiumLinkContainer {
-	display: none;
-}
-*/}
-
 if (document.domain == "www.nicovideo.jp") {
-	
-	// スタイル設定
-	var css = (__css__).toString().match(/[^]*\/\*([^]*)\*\/\}$/)[1]
-	$('head').append(`<style id="nico" type="text/css">${css}</style>`)
-	
 	
 	var json = JSON.parse($('#js-initial-watch-data').attr('data-api-data'));
 	var now = new Date();
@@ -58,6 +47,7 @@ const PROP = [
 function getVideo() {
 	return new Promise(function(resolve, reject) {
 		var iv = setInterval(function() {
+			console.log('video load');
 			var video = $('video')[0];
 			if (!video || !$(video).prop('src')) 
 				return;
@@ -66,6 +56,7 @@ function getVideo() {
 		}, 500)
 	})
 }
+
 
 Promise.all([
 	getLocalStorage(PROP),
@@ -100,7 +91,7 @@ Promise.all([
 			if (nico_setting.just_scroll) justScroll();
 		}
 		
-		getVideo().then((video) => {
+		getVideo().then(video => {
 			$('.PlayerContainer').focus();
 			$(video).on('ended', function() {
 				console.log("video ended");
@@ -108,28 +99,34 @@ Promise.all([
 				setLocalStorage({nico_full_screen:$('body').hasClass('is-fullscreen')});
 				// マイリストタブへ動画終了を通知
 				sendMessage({id:"video_ended"});
+				$('#pause, #play').css('visibility', 'hidden').removeClass('click')
 			});
 			
-			// 画面をクリックで再生停止
-			$(video).on('pause', function() {
-				$('#pause').css('visibility', 'visible').toggleClass('click')
-				$('#play' ).css('visibility', 'hidden' ).toggleClass('click')
-			});
+			// 初回再生で再生停止機能、アイコン追加
 			$(video).on('play', function() {
-				if (!$('#over-layer')[0]) {
-					nicoScreenClick2Play();
+				$('.InView.VideoContainer').append(over_layer).on('click', () => {
+					$('.PlayerPlayButton, .PlayerPauseButton').click();
+				})
+				$(video).off('play')
+			})
+			// アイコン処理
+			var pause_play = function() {
+				if (video.paused) {
+					$('#pause').css('visibility', 'hidden' ).removeClass('click')
+					$('#play' ).css('visibility', 'visible').addClass('click')
 				} else {
-					$('#pause').css('visibility', 'hidden' ).toggleClass('click')
-					$('#play' ).css('visibility', 'visible').toggleClass('click')
+					$('#pause').css('visibility', 'visible').addClass('click')
+					$('#play' ).css('visibility', 'hidden' ).removeClass('click')
 				}
-			});
+			}
+			$('.ControllerContainer-inner').on('click', '.PlayerPlayButton, .PlayerPauseButton', pause_play)
+			$('.PlayerContainer').on('keydown', e => { if (e.keyCode == 32) pause_play() })
 		});
 		
 	}
 	
 	if (document.domain == "www.youtube.com") {
 		getVideo().then((video) => {
-			
 			$(video).on('ended', function() {
 				console.log("video ended");
 				// マイリストタブへ動画終了を通知
@@ -140,25 +137,20 @@ Promise.all([
 });
 
 
-function nicoScreenClick2Play() {
-	$('.InView.VideoContainer').append(`
-		<div id="over-layer">
-			<div id="play" class="controll-button click">
-				<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 13.229 13.229">
-					<path d="M13.23 6.615a6.615 6.615 0 0 1-6.615 6.614A6.615 6.615 0 0 1 0 6.615 6.615 6.615 0 0 1 6.615 0a6.615 6.615 0 0 1 6.614 6.615z"/>
-					<path d="M10.054 6.615l-5.16 2.978V3.636z" fill="#fff"/>
-				</svg>
-			</div>
-			<div id="pause" class="controll-button" style="visibility:hidden">
-				<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 13.229 13.229">
-					<g transform="translate(0 -283.77)">
-						<circle cx="6.615" cy="290.385" r="6.615"/>
-						<path fill="#fff" d="M3.969 287.21h1.852v6.35H3.969zM7.408 287.21H9.26v6.35H7.408z"/>
-					</g>
-				</svg>
-			</div>
-		</div>`
-	).on('click', () => {
-		$('.PlayerPlayButton, .PlayerPauseButton').click();
-	});	
-}
+var over_layer = `
+<div id="over-layer">
+	<div id="play" class="controll-button">
+		<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 13.229 13.229">
+			<path d="M13.23 6.615a6.615 6.615 0 0 1-6.615 6.614A6.615 6.615 0 0 1 0 6.615 6.615 6.615 0 0 1 6.615 0a6.615 6.615 0 0 1 6.614 6.615z"/>
+			<path d="M10.054 6.615l-5.16 2.978V3.636z" fill="#fff"/>
+		</svg>
+	</div>
+	<div id="pause" class="controll-button">
+		<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 13.229 13.229">
+			<g transform="translate(0 -283.77)">
+				<circle cx="6.615" cy="290.385" r="6.615"/>
+				<path fill="#fff" d="M3.969 287.21h1.852v6.35H3.969zM7.408 287.21H9.26v6.35H7.408z"/>
+			</g>
+		</svg>
+	</div>
+</div>`
