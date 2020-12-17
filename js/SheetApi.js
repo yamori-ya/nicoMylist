@@ -46,7 +46,6 @@ class SheetApi
 		);
 	}
 	DeleteLine(sheetId, delLines) {
-		var req = "";
 		delLines.sort((a,b)=>a-b);
 		var range = [];
 		var start = delLines[0], ago;
@@ -58,9 +57,9 @@ class SheetApi
 			ago = v;
 		});
 		range.push([start-1, ago]);
-		range.reverse().forEach((v) => {
-			req += `{"deleteDimension":{"range":{"sheetId":${sheetId},"dimension":"ROWS","startIndex":${v[0]},"endIndex":${v[1]}}}},`;
-		});
+		var req = range.reverse().map(v => 
+			`{"deleteDimension":{"range":{"sheetId":${sheetId},"dimension":"ROWS","startIndex":${v[0]},"endIndex":${v[1]}}}}`
+		).join(',')
 		
 		return this.Run(
 			`:batchUpdate`,
@@ -71,20 +70,16 @@ class SheetApi
 			}
 		);
 	}
-	// update() {
-	// 	return this.Run(
-	// 		SheetApi.API_URL + this.bookId_ +':batchUpdate',
-	// 		{
-	// 			method: 'POST',
-	// 			async: true,
-	// 			body: '{"requests": [{"updateCells": {"start": 
-	// 			{"sheetId": 0,"rowIndex": 0,"columnIndex": 0},"rows":
-	// 			 [{"values": [{},{"userEnteredValue": {"stringValue": 
-	// 			 "国語"}}],},{"values": [{"userEnteredValue": {"stringValue
-	// 			 ": "A"}}]},],"fields": "userEnteredValue"}}]}'
-	// 		}
-	// 	);
-	// }
+	Update() {
+		return this.Run(
+			':batchUpdate',
+			{
+				method: 'POST',
+				async: true,
+				body: '{"requests":[{"updateCells":{"start":{"sheetId":0,"rowIndex":0,"columnIndex":0},"rows":[{"values":[{"userEnteredValue":{"stringValue":"tmp2"}}]}],"fields":"userEnteredValue"}}]}'
+			}
+		);
+	}
 
 	Run(path, request) {
 		var url = 'https://sheets.googleapis.com/v4/spreadsheets/' + this.bookId_ + path;
