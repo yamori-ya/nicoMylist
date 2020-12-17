@@ -1,40 +1,89 @@
+
+$.fn.tap = function() {
+	return $(this).on({
+		touchstart: function(e) {
+			$(this).data('tap', true)
+			var to = setTimeout(() => {
+				$(this).data('tap', false)
+				$(this).trigger('subfocus')
+			}, 200)
+			$(this).data('tap_to', to)
+		},
+		touchmove: function(e) {
+			if ($(this).data('tap')) {
+				$(this).trigger('subfocus')
+				$(this).data('tap', false)
+				clearTimeout($(this).data('tap_to'))
+			}
+		},
+		touchend: function(e) {
+			if ($(this).data('tap')) {
+				$(this).data('tap', false)
+				clearTimeout($(this).data('tap_to'))
+				e.type = 'temp'
+				$(this).trigger(e)
+				e.preventDefault()
+			}
+		},
+		temp: function(e) {
+			e.touches = e.changedTouches
+			e.changedTouches = void(0)
+			if ($(this).data('dbltap')) {
+				$(this).data('dbltap', false)
+				clearTimeout($(this).data('dbltap_to'))
+				e.type = 'doubletap'
+				$(this).trigger(e)
+			} else {
+				$(this).data('dbltap', true)
+				var to = setTimeout(() => {
+					$(this).data('dbltap', false)
+					e.type = 'tap'
+					$(this).trigger(e)
+				}, 200)
+				$(this).data('dbltap_to', to)
+			}
+		}
+	})
+}
+
+const OVER_LAYER = `
+<div id="over-layer">
+	<div id="play" class="controll-button">
+		<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 13.229 13.229">
+			<path d="M13.23 6.615a6.615 6.615 0 0 1-6.615 6.614A6.615 6.615 0 0 1 0 6.615 6.615 6.615 0 0 1 6.615 0a6.615 6.615 0 0 1 6.614 6.615z"/>
+			<path d="M10.054 6.615l-5.16 2.978V3.636z" fill="#fff"/>
+		</svg>
+	</div>
+	<div id="pause" class="controll-button">
+		<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 13.229 13.229">
+			<g transform="translate(0 -283.77)">
+				<circle cx="6.615" cy="290.385" r="6.615"/>
+				<path fill="#fff" d="M3.969 287.21h1.852v6.35H3.969zM7.408 287.21H9.26v6.35H7.408z"/>
+			</g>
+		</svg>
+	</div>
+</div>`
+
+
+
 // 動画情報
 var video_info;
-
 if (document.domain == "www.nicovideo.jp") {
 	
-	var json = JSON.parse($('#js-initial-watch-data').attr('data-api-data'));
-	var now = new Date();
-	var yyyy = now.getFullYear(),
-		MM = (now.getMonth() + 1),
-		dd = now.getDate(),
-		hh = now.getHours(),
-		mm = now.getMinutes(),
-		sc = now.getSeconds();
-	
-	video_info = [
-		"def", "index",
-		location.href,
-		json.video.title,
-		json.video.largeThumbnailURL || json.video.thumbnailURL,
-		json.tags.map((tag) => tag.name).join(" "),
-		$('span.PlayerPlayTime-duration').text(),
-		"", `${yyyy}/${MM}/${dd} ${hh}:${mm}:${sc}`,
-	];
 }
 else if (document.domain == "www.youtube.com") {
 	
 }
 
 // popへ動画情報送信
-chrome.runtime.onMessage.addListener(
-	function(request, sender, sendResponse) {
-		if (request.id == "getVideoInfo") {
-			sendResponse({data: video_info});
-		}
-		return true;
-	}
-);
+// chrome.runtime.onMessage.addListener(
+// 	function(request, sender, sendResponse) {
+// 		if (request.id == "getVideoInfo") {
+// 			sendResponse({data: video_info});
+// 		}
+// 		return true;
+// 	}
+// );
 
 
 const PROP = [
@@ -99,14 +148,31 @@ Promise.all([
 				setLocalStorage({nico_full_screen:$('body').hasClass('is-fullscreen')});
 				// マイリストタブへ動画終了を通知
 				sendMessage({id:"video_ended"});
-				$('#pause, #play').css('visibility', 'hidden').removeClass('click')
 			});
 			
+			// タップ操作処理
+			$('.InView.VideoContainer').tap()
+			.on('tap click', function(e) {
+				$('.PlayerPlayButton, .PlayerPauseButton').click()
+			})
+			.on('doubletap', function(e) {
+				var lr = ($(this).width() / 2 < e.touches[0].pageX - $(this).offset().left)
+				$(lr ? '.PlayerSeekForwardButton' : '.PlayerSeekBackwardButton').click()
+			})
+			.on('subfocus', function(e) {
+				if ($('.is-fullscreen').length && !$('.is-fixedFullscreenController').length) {
+					var container = $(this).parent()
+					container.addClass('is-mouseMoving')
+					clearTimeout($(this).data('focus_to'))
+					var to = setTimeout(() => {
+						container.removeClass('is-mouseMoving')
+					}, 2000)
+					$(this).data('focus_to', to)
+				}
+			})
 			// 初回再生で再生停止機能、アイコン追加
 			$(video).on('play', function() {
-				$('.InView.VideoContainer').append(over_layer).on('click', () => {
-					$('.PlayerPlayButton, .PlayerPauseButton').click();
-				})
+				$('.InView.VideoContainer').append(OVER_LAYER)
 				$(video).off('play')
 			})
 			// アイコン処理
@@ -137,20 +203,3 @@ Promise.all([
 });
 
 
-var over_layer = `
-<div id="over-layer">
-	<div id="play" class="controll-button">
-		<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 13.229 13.229">
-			<path d="M13.23 6.615a6.615 6.615 0 0 1-6.615 6.614A6.615 6.615 0 0 1 0 6.615 6.615 6.615 0 0 1 6.615 0a6.615 6.615 0 0 1 6.614 6.615z"/>
-			<path d="M10.054 6.615l-5.16 2.978V3.636z" fill="#fff"/>
-		</svg>
-	</div>
-	<div id="pause" class="controll-button">
-		<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 13.229 13.229">
-			<g transform="translate(0 -283.77)">
-				<circle cx="6.615" cy="290.385" r="6.615"/>
-				<path fill="#fff" d="M3.969 287.21h1.852v6.35H3.969zM7.408 287.21H9.26v6.35H7.408z"/>
-			</g>
-		</svg>
-	</div>
-</div>`
