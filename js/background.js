@@ -1,9 +1,12 @@
+var videoInfo;
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	switch(request.id) {
 	case "add_video":
-		getSyncStorage("bookId")
-		.then((value) => {
-			api.bookId = value.bookId;
+		getSyncStorage("ids")
+		.then(value => {
+			console.log(value);
+			var api = new SheetApi(value.ids.book)
 			return api.AppendData("list", request.videoInfo);
 		})
 		.then((obj) => {
@@ -33,12 +36,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		break;
 
 	case "GetRange":
-		getSyncStorage(["bookId"]).then((value) => {
-			api.bookId = value.bookId; 
+		getSyncStorage(["ids"]).then((value) => {
+			var api = new SheetApi(value.ids.book)
 			api.GetRange(request.ranges).then((value) => {
 				sendResponse(value);
 			});
 		});
+		break;
+	
+	case "getVideoInfo":
+		videoInfo = request.data;
 		break;
 	}
 	return true;

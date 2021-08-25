@@ -1,138 +1,96 @@
-$(function() {
-	
-	
-	// 設定項目用dom生成
-	$('div.option-obj').each(function(i, e) {
-		var id = $(e).attr("id");
-		var cap = $(`<p class="caption font">${$(e).text()}</p>`);
+var listSheetId
+var infoSheetId
+var changeBookId = false
+
+function addBook() {
+	if (!window.confirm("スプレッドシートを新規作成します"))
+		return false
 		
-		var mod = "";
-		if ($(e).hasClass('text')) {
-			mod = $(`<div class="txt"></div>`)
-				.append(`<input type="text" class="val" id="${id}-txt">`);
-		}
-		else if ($(e).hasClass('check')) {
-			mod = $(`<div class="toggle"></div>`)
-				.append(`<input type="checkbox" class="val tgl-chk" id="${id}-chk">`)
-				.append(`<label class="tgl-lbl" for="${id}-chk"></label>`);
-		}
-		$(e).text("");
-		$(e).append(cap).append(mod);
-	});
-	
-	
-	
-	var listSheetId;
-	var infoSheetId;
-	
-	// load
-	const SYNC_STORAGE = [
-		"bookId",
-		"sheetIds",
-	];
-	const LOCAL_STORAGE = [
-		"nico_setting",
-	];
-	Promise.all([
-		getSyncStorage(SYNC_STORAGE),
-		getLocalStorage(LOCAL_STORAGE),
-	]).then((values) => {
-		let sync = values[0];
-		let local = values[1];
-		
-		$('#bookId-txt').val(sync.bookId);
-		
-		// 設定系
-		if (local.nico_setting) {
-			let setting = local.nico_setting;
-			$('#opt1-chk').prop('checked', setting.auto_play);
-			$('#opt2-chk').prop('checked', setting.just_scroll);
-			$('#opt3-chk').prop('checked', setting.screen_click);
-		}
-		if (sync.sheetIds) {
-			listSheetId = sync.sheetIds.list;
-			infoSheetId = sync.sheetIds.info;
-		}
-	});
-	
-	var params = [];
-	if (location.search != "") {
-		$.each(location.search.substring(1).split("&"), function(i, one) {
-			let p = one.split("=");
-			params[p[0]] = decodeURI(p[1]);
-		});
-	}
-	if (Object.keys(params).length != 0) {
-		if (params["status"] == "empty") {
-			$('#error_str').html("シートIDが設定されていません");
-		} else if (params["status"].match(/^error(\d+)/)) {
-			$('#error_str').html("シートIDが不正です: " + params["status"]);
-		}
-	}
-	
-	$('#save').click(function() {
-		
-		if (!$(this).hasClass('active')) {
+	var api = new SheetApi('')
+	api.CreateBook()
+	.then(ids => {
+		$('#bookId').val(ids.book);
+		listSheetId = ids.list;
+		infoSheetId = ids.info;
+		return Promise.all([
+			api.AppendData('info', ['def']),
+			setSyncStorage({ids: ids, reload: true})
+		])
+	})
+	.then(() => {
+		alert('スプレッドシートを作成しました！')
+	})
+}
+function getSheetId(bookId) {
+	var api = new SheetApi(bookId)
+	api.GetBookInfo()
+	.then(obj => {
+		if (obj.error) { // シートへのアクセス失敗
+			goOption('error' + obj.error.code)
 			return;
 		}
-		
-		console.log("保存！");
-		
-		// 各シートのIDが取得できていなかったら取得
-		if (listSheetId == null || infoSheetId == null ) {
-			console.log("シートIDがないため取得");
-			
-			api.bookId = $('#bookId-txt').val();
-			api.GetBookInfo().then((obj) => {
-				if (obj.error) { // シートへのアクセス失敗
-					location.href = '/option.html?status=error'+obj.error.code;
-					return;
-				}
-				$.each(obj.sheets, (i, one) => {
-					switch(one.properties.title) {
-						case "list": listSheetId = one.properties.sheetId; break;
-						case "info": infoSheetId = one.properties.sheetId; break;
-					}
-				});
-				if (listSheetId == null || infoSheetId == null) {
-					location.href = '/option.html?status=error'+obj.error.code;
-					return;
-				}
-				setSyncStorage({
-					sheetIds :{
-						list:listSheetId,
-						info:infoSheetId
-					}
-				});
-			});
+		for (var one of obj.sheets) {
+			switch(one.properties.title) {
+			case "list": listSheetId = one.properties.sheetId; break;
+			case "info": infoSheetId = one.properties.sheetId; break; }
 		}
-		
-		// 保存
+		if (listSheetId == null || infoSheetId == null) {
+			goOption('error' + obj.error.code)
+			return;
+		}
 		setSyncStorage({
-			bookId:$('#bookId-txt').val(),
+			ids : {
+				book: bookId,
+				list: listSheetId,
+				info: infoSheetId
+			},
+			reload: true
 		});
-		setLocalStorage({
+	});
+}
+
+
+$(function() {
+	getSyncStorage(["ids", "nico_setting"])
+	.then(value => {
+		// 設定系
+		if (value.ids) {
+			$('#bookId').val(value.ids.book)
+			listSheetId = value.ids.list
+			infoSheetId = value.ids.info
+		}
+		if (value.nico_setting) {
+			$('#nico-scroll'    ).prop('checked', value.nico_setting.scroll)
+			$('#nico-click2play').prop('checked', value.nico_setting.click2play)
+		}
+	})
+	
+	var params = getUrlParams();
+	if (Object.keys(params).length != 0) {
+		if (params["status"] == "empty") {
+			$('#error_str').html("BookIDが設定されていません");
+		} else if (params["status"].match(/^error(\d+)/)) {
+			$('#error_str').html("BookIDが不正です: " + params["status"]);
+		}
+	}
+	
+	$('#bookId, .tgl-chk').on('change', e => {
+		$('#save').removeAttr('disabled')
+		if (e.currentTarget.id == 'bookId') changeBookId = true
+	})
+	
+	$('#create').on('click', addBook)
+	
+	$('#save').on('click', function() {
+		if (changeBookId) {
+			getSheetId($('#bookId').val())
+		}
+		setSyncStorage({
 			nico_setting : {
-				auto_play:   $('#opt1-chk').prop('checked'),
-				just_scroll: $('#opt2-chk').prop('checked'),
-				screen_click:$('#opt3-chk').prop('checked'),
+				scroll:     $('#nico-scroll').prop('checked'),
+				click2play: $('#nico-click2play').prop('checked')
 			}
-		});
-		$('#save').removeClass('active');
+		})
+		$('#save').attr('disabled','')
 	});
-	
-	
-	
-	$('.val').on('change keyup', function() {
-		console.log("変更されました！");
-		$('#save').addClass('active');
-	});
-	
-	// $('#add_').click(function() {
-	// 
-	// 	chrome.runtime.sendMessage({id:"create_book"}, function(response) {
-	// 		console.log(response);
-	// 	});
-	// });
-	
 });

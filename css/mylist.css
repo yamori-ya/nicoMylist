@@ -15,6 +15,15 @@ header#header-fixed {
 	height: 37px;
 	z-index: 100;
 }
+#editor {
+	display: none;
+}
+#editor.edit {
+	display: block;
+	position: fixed;
+	top: 60px;
+	left: 20px;
+}
 #content {
 	position: relative;
 	top: 50px;
@@ -22,10 +31,19 @@ header#header-fixed {
 	width: 1150px;
 	display: flex;
 }
+#content.edit {
+	top: 100px;
+}
+#content.edit #mylist .check,
+#content.edit #mylist .handle {
+	visibility: visible;
+}
 #folder {
 	position: fixed;
 	width: 285px;
-	min-height: 500px;
+	min-height: 50vh;
+	max-height: 60vh;
+	overflow: auto;
 	height: fit-content;
 	background: #dcdcdc;
 }
@@ -33,9 +51,6 @@ header#header-fixed {
 	position: absolute;
 	right: 0;
 	width: 860px;
-}
-.hidden-area {
-	display: none;
 }
 /* ######################## 画面構成 ######################## */
 
@@ -101,83 +116,100 @@ header#header-fixed {
 	display: flex;
 	padding: 3px 3px 6px 3px;
 	border-bottom: 1px solid #aaa;
-	border-radius: 5px;
-	transition: 200ms;
-}
-.video-checked {
-	background: #a9c0f3;
 }
 
-.check-label {
-	display: flex;
-	cursor: pointer;
+.check {
+	display: contents;
+	visibility: hidden;
 }
-.check-label:hover {
-	background: #e2e2ff;
-}
-.check-box {
-	height: 18px;
-	width: 18px;
-	margin: auto 8px auto 8px;
-	border: 2.5px solid #ccc;
-}
-.check-box.check::after {
-	content: '';
-	display: block;
-	width: 88%;
-	height: 44%;
-	top: 4%;
-	left: 18%;
-	border-left: 3px solid #888;
-	border-bottom: 3px solid #888;
-	transform: rotate(-45deg);
-}
-.video-check {
+[type="checkbox"] {
 	display: none;
 }
-
-.handle-area {
+[type="checkbox"] + label {
+	display: flex;
+	cursor: pointer;
+	position: relative;
+}
+[type="checkbox"] + label:hover {
+	background: #e2e2ff;
+}
+[type="checkbox"] + label::before {
+	content: '';
+	height: 22px;
+	width: 22px;
+	margin: auto 6px;
+	border: 2.5px solid #ccc;
+	border-radius: 4px;
+}
+[type="checkbox"]:checked + label::before {
+	background: #0080ff;
+	border: 2.5px solid #0080ff;
+}
+[type="checkbox"] + label::after {
+	content: '';
+	position: absolute;
+	width: 12px;
+	height: 6px;
 	margin: auto;
-	transition: 400ms;
+	top: -3px; bottom: 0;
+	left: 12px;
+	border-left: 3px solid #fff;
+	border-bottom: 3px solid #fff;
+	transform: rotate(-45deg);
+}
+[type="checkbox"]:not(:checked) + label:after {
+	opacity: 0;
+}
+[type="checkbox"]:checked + label:after {
+	opacity: 1;
 }
 
-.thumbnail-area {
+
+.handle {
+	margin: auto;
+	visibility: hidden;
+}
+.handle svg {
+	width: 32px;
+	height: 32px;
+	cursor: pointer;
+}
+
+.thumbnail {
 	padding: 0 0.8em;
 	margin: auto 0 auto 0;
 }
-.thumbnail-area img {
+.thumbnail img {
 	width: 130px;
 }
-.thumbnail-area img:after {  
-  content: "No Image";
- 
-  font-size: 16px;
-  font-family: FontAwesome;
-  color: rgb(100, 100, 100);
- 
- 	display: block;
+.thumbnail img:after {  
+	content: "No Image";
+	font-size: 16px;
+	font-family: FontAwesome;
+	color: rgb(100, 100, 100);
+	display: block;
 	text-align: center;
-  width: 130px;
-  height: 100px;
-  background-color: #fff;
+	width: 130px;
+	height: 100px;
+	background-color: #fff;
 }
-.title-area {
+.title {
 	font-size: 15px;
 	font-weight: bold;
 	padding: 3px 0 3px 0;
 }
-.title-area a {
+.title a {
 	text-decoration: none;
 }
-.title-area a:hover{
+.title a:hover{
 	text-decoration: underline;
 }
-.tag-area {
+.tag {
 	width: 600px;
 	min-height: 53px;
 	padding: 2px 0 2px 0;
 }
-.tag-area li{
+.tag li{
 	list-style: none;
 	display: inline-table;
 	padding: 0 5px 0 5px;
@@ -187,9 +219,9 @@ header#header-fixed {
 	white-space: nowrap;
 	background: white;
 }
-.tag-area a {
+.tag a {
 }
-.comment-area {
+.comment {
 	border: #C9CFCF solid 2px;
 	background: #F9FFFF;
 	width: 600px;
@@ -228,28 +260,6 @@ header#header-fixed {
 	transition: 0.3s;
 }
 
-.modal {
-	position: fixed;
-	z-index: 101;
-}
-.modal-back {
-	position: fixed;
-	top: 0;
-	z-index: 101;
-	width: 100%;
-	height: 100%;
-	background: rgba(0,0,0, 0.3);
-}
-.modal-front {
-	position: fixed;
-	left: 50%;
-	transform: translate(-50%, 0);
-	z-index: 102;
-	width: 300px;
-	height: 200px;
-	background: white;
-	margin: 5em auto;
-}
 /* ######################## リスト ######################## */
 
 
@@ -321,45 +331,6 @@ header#header-fixed {
 	20% { transform: scaleY(1.0) } 
 }
 
-#menuButton {
-	overflow: hidden;
-	display: block;
-	position: relative;
-	z-index: 0;
-	width: 30px;
-	height: 30px;
-	cursor: pointer;
-}
-#menuButton span,
-#menuButton::before,
-#menuButton::after {
-	display: block;
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left:0;
-	right: 0;
-	width: 22px;
-	height: 2px;
-	border-radius: 10px;
-	margin: auto;
-	background: #000;
-}
-#menuButton span {
-	overflow: hidden;
-	z-index: 1;
-	color: #000;
-}
-#menuButton::before {
-	z-index: 2;
-	transform: translate(0, -7px);
-	content: "";
-}
-#menuButton::after {
-	z-index: 2;
-	transform: translate(0, 7px);
-	content: "";
-}
 
 
 #load-layer {

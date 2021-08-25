@@ -1,10 +1,29 @@
 class SheetApi
 {
-	set bookId(bookId) {
+	constructor(bookId) {
 		this.bookId_ = bookId;
 	}
+	
 	CreateBook() {
-		return this.Run('', { method: 'POST', async: true });
+		this.bookId_ = ''
+		var name = 'マイリスト'
+		return this.Run('', {
+			method: 'POST',
+			async: true,
+			body: `{"properties":{"title":"${name}"},"sheets":[{"properties":{"title":"info"}},{"properties":{"title":"list"}}]}`
+		})
+		.then(res => {
+			this.bookId_ = res.spreadsheetId
+			return new Promise(function(resolve, reject) {
+				var infoId, listId
+				for (var s of res.sheets) {
+					switch (s.properties.title) {
+					case 'info': infoId = s.properties.sheetId; break;
+					case 'list': listId = s.properties.sheetId; break; }
+				}
+				resolve({ book: res.spreadsheetId, info: infoId, list: listId })
+			});
+		})
 	}
 	Sort() {
 		return this.Run(
@@ -34,7 +53,7 @@ class SheetApi
 	}
 	AppendData(sheet, data) {
 		for (var i=0;i<data.length;i++) {
-			data[i] = `"${data[i]}"`
+			data[i] = '"'+data[i].replaceAll('"', '\\"')+'"'
 		}
 		return this.Run(
 			`/values/${sheet}!A:A:append?valueInputOption=USER_ENTERED`,
@@ -49,7 +68,7 @@ class SheetApi
 		delLines.sort((a,b)=>a-b);
 		var range = [];
 		var start = delLines[0], ago;
-		delLines.forEach((v) => {
+		delLines.forEach(v => {
 			if (ago && Math.abs(ago-v) != 1) {
 				range.push([start-1, ago]);
 				start = v;
@@ -70,13 +89,17 @@ class SheetApi
 			}
 		);
 	}
-	Update() {
+	Update(id, rcvList) {
+		var req = rcvList.map(rcv => 
+			`{"updateCells": {"start": {"sheetId": ${id},"rowIndex": ${rcv.row},"columnIndex": ${rcv.col}},"rows": [{"values": [{"userEnteredValue": {"stringValue": "${rcv.val}"}}]}],"fields": "userEnteredValue"}}`
+		).join(',')
+		
 		return this.Run(
 			':batchUpdate',
 			{
 				method: 'POST',
 				async: true,
-				body: '{"requests":[{"updateCells":{"start":{"sheetId":0,"rowIndex":0,"columnIndex":0},"rows":[{"values":[{"userEnteredValue":{"stringValue":"tmp2"}}]}],"fields":"userEnteredValue"}}]}'
+				body: `{"requests": [${req}]}`
 			}
 		);
 	}
@@ -84,18 +107,28 @@ class SheetApi
 	Run(path, request) {
 		var url = 'https://sheets.googleapis.com/v4/spreadsheets/' + this.bookId_ + path;
 		console.log("request url:" + url);
+		console.log(request);
 		
 		return new Promise(function(resolve, reject) {
-			chrome.identity.getAuthToken({interactive: true}, function(token) {
+			let authURL = "https://accounts.google.com/o/oauth2/auth"
+			authURL += `?client_id=645932863093-oqe5hc67ec4f927bvirkbtd2nlno6mgr.apps.googleusercontent.com`
+			authURL += `&response_type=token`
+			authURL += `&redirect_uri=${chrome.identity.getRedirectURL("oauth2.html")}`
+			authURL += `&scope=${encodeURIComponent("https://www.googleapis.com/auth/spreadsheets")}`;
+			chrome.identity.launchWebAuthFlow({interactive: true, url: authURL}, function(redirectURL) {
 				if (chrome.runtime.lastError) {
 					console.log(chrome.runtime.lastError);
 					reject();
 				} else {
+					let param = new URL(redirectURL.replace('#', '?'))
+					let token = param.searchParams.get("access_token")
+					
 					request.headers = {
 						'Authorization': 'Bearer ' + token,
 						'Content-Type': 'application/json; charset=UTF-8'
 					}
 					request.contentType = 'json';
+					console.log(request);
 					
 					return fetch(url, request)
 					.then((response) => {
@@ -107,4 +140,3 @@ class SheetApi
 		});
 	}
 }
-var api = new SheetApi();

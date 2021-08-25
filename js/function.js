@@ -1,13 +1,27 @@
+const URL_OPTION = '/html/option.html';
+const URL_MYLIST = '/html/mylist.html';
+
+
+/**
+ * オプションページへ遷移
+ */
+function goOption(status = '') {
+	if (status && status.length > 0) {
+		location.href = URL_OPTION + '?status=' + status
+	} else {
+		location.href = URL_OPTION
+	}
+}
 /**
  * urlからパラメータ取得
  */
 function getUrlParams(debug = false) {
 	var params = [];
 	if (location.search != "") {
-		$.each(location.search.substring(1).split("&"), function(i, one) {
+		for (var one of location.search.substring(1).split("&")) {
 			let p = one.split("=");
 			params[p[0]] = decodeURI(p[1]);
-		});
+		}
 	}
 	if (debug) console.log(params);
 	return params;
@@ -60,8 +74,32 @@ function setSyncStorage(setParamMap) {
  */
 function sendMessage(paramMap) {
 	return new Promise(function(resolve, reject) {
-		chrome.runtime.sendMessage(paramMap, function(responce) {
-			resolve(responce);
+		chrome.runtime.sendMessage(paramMap, function(response) {
+			resolve(response);
 		});
 	});
+}
+
+var timerMap = {}
+class Timer {
+	static start(name) {
+		timerMap[name] = Date.now()
+	}
+	static end(name) {
+		var t = Date.now() - timerMap[name]
+		delete timerMap[name]
+		return t
+	}
+}
+
+class Template {
+	constructor(selector) {
+		this.temp = document.querySelector(selector).content
+	}
+	static createFragment() {
+		return document.createDocumentFragment()
+	}
+	clone() {
+		return document.importNode(this.temp, true)
+	}
 }

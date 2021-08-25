@@ -1,126 +1,174 @@
 var playTabId;
 var nowIndex;
-
-var showLoad = () => $('#load-layer, #loader').show();
-var hideLoad = () => $('#load-layer, #loader').hide();
-
-var getCheckedLines = () => $('.video-check:checked').map((i,e) => $(e).val()*1+1);
+var api;
+var ids;
+var params = getUrlParams();
 
 
-function getListUrl(index) {
-	$('.spinner').remove();
-	var spinner = $("#spinner").clone().addClass('spinner');
-	
-	var item = $(`#list-${index}`);
-	item.find('.thumbnail-area').append(spinner);
-	scroll(item.offset().top-60);
-	return item.find('a:eq(0)').attr('href');
+const view = {
+	showLoad: function() {
+		$('#load-layer, #loader').show()
+	},
+	hideLoad: function() {
+		$('#load-layer, #loader').hide()
+	},
+	scroll: function(height) {
+		$('body,html').animate({ scrollTop: height }, 300)
+	},
+	view: function(index) {
+		scroll($(`#list-${index}`).offset().top-60)
+	},
+	spinner: function(index) {
+		$('.spinner').remove();
+		var tmp = $('#video-tmp')[0].content
+		var clone = document.importNode(tmp, true)
+		$(clone).addClass('spinner')
+		$(`#list-${index}`).find('.thumbnail').append(clone)
+	}
 }
-function scroll(height) {
-	$('body,html').animate({ scrollTop: height }, 300);
-  return false;
+const data = {
+	getUrl: function(index) {
+		return $(`#list-${index} a:eq(0)`).attr('href')
+	},
+	getChecked: function() {
+		return $('.video input:checked').get().map(e => $(e).val()*1+1)
+	}
 }
-
-function loadBook(bookId) {
-	showLoad();
-	$('#folder-list, #list').empty();
-	
-	const sTime = Date.now();
-	
-	getSyncStorage(["bookId"])
-	.then((value) => {
-		if (!value.bookId) { // ブックIDが未設定
-			location.href = '/option.html?status=empty';
-			return;
+const edit = {
+	add: async function() {
+		let name = window.prompt("フォルダ名", "");
+		if (name) {
+			view.showLoad()
+			$('#edit').click()
+			await api.AppendData('info', [name])
+			loadBook()
 		}
-		api.bookId = value.bookId;
-		return api.GetRange(["info!A:A", "list!A:I"]);
-	})
-	.then((obj) => {
-		console.dir(obj);
-		if (obj.error) { // シートへのアクセス失敗
-			location.href = '/option.html?status=error'+obj.error.code;
-			return;
-		}
+	},
+	move: function() {
+		view.showLoad()
+		Timer.start('move')
+		var checked = data.getChecked()
+		var val = $('#editor select').val()
+		var m = checked.map(i => { return {row: i-1, col: 0, val: val} })
 		
-		cache_data = {
-			folder: obj.valueRanges[0].values.flat(),
-			data: obj.valueRanges[1].values.map((val, i) => {
-				return {
-					line:i, folder:val[0], index:val[1], url:val[2], title:val[3],
-					thumbnail:val[4], tag:val[5], time:val[6], comment:val[7], instm:val[8]
-				};
-			})
-		};
-		setLocalStorage({
-			cache: cache_data,
-			have_to_reload: false
-		});
-		createList(cache_data, params["list"]);
-		const endTime = Date.now();
-		console.log("load book time: " + (endTime - sTime));
+		api.Update(ids.list, m).then(response => {
+			console.log(`移動にかかった時間: ${Timer.end('move')}ms`)
+			loadBook()
+		})
+	},
+	copy: function() {
+		alert('まだないんだ、すまない')
+		// api = new SheetApi('')
+		// api.CreateBook().then(ids => {
+		// 	console.log(ids.book);
+		// 	console.log(ids.info);
+		// 	console.log(ids.list);
+		// })
+	},
+	delete: function() {
+		var checked = data.getChecked()
+		if (checked.length == 0 || !window.confirm(checked.length + "件 削除します"))
+			return false
+		
+		view.showLoad()
+		Timer.start('del')
+		console.log("削除する行: " + checked)
+		
+		api.DeleteLine(ids.list, checked).then(response => {
+			console.log(`削除にかかった時間: ${Timer.end('del')}ms`)
+			loadBook()
+		})
+	}
+}
+
+function loadBook() {
+	$('#video > li').remove()
+	$('#folder-list > li').remove()
+	$('#editor select').empty()
+	
+	view.showLoad()
+	Timer.start('load')
+	
+	api.GetRange(["info!A:A", "list!A:I"])
+	.then(obj => {
+		if (obj.error) { // シートへのアクセス失敗
+			goOption('error' + obj.error.code)
+			return
+		}
+		console.log(`ブック読込時間: ${Timer.end('load')}ms`);
+		
+		var cacheF = (obj.valueRanges[0].values || []).flat()
+		var cacheL = (obj.valueRanges[1].values || []).map((val, i) => {
+			return {
+				line:i, folder:val[0], index:val[1], url:val[2], title:val[3],
+				thumbnail:val[4], tag:val[5], time:val[6], comment:val[7], instm:val[8]
+			}
+		})
+		setLocalStorage({ cacheL: cacheL, cacheF: cacheF })
+		setSyncStorage({ reload: false })
+		createList(cacheL, cacheF);
 	});
 }
 
-function createList(obj, listName, findStr = "") {
-	const startTime = Date.now();
-	var str = "";
+function createList(listData, folderData) {
+	Timer.start('list')
 	var cnt = 0;
-	$.each(obj.data, function(i, item) {
-		if (item.folder != listName)
-			return true;
-		
-		if (findStr.length > 0) {
-			if (item.title.indexOf(findStr) == -1 && 
-				item.tag.indexOf(findStr) == -1) return true;
-		}
-		
-		var tags = "";
-		if (item.tag && item.tag.length > 0)
-		tags = item.tag.split(' ').map(t => `<li><span>${t}</span></li>`).join('');
+	
+	var folder = params['list'] || "def"
+	var fstr   = params['fstr'] || ""
+	
+	var videoTmp = new Template('#video-tmp')
+	var tagTmp = new Template('#tag-tmp')
+	var fragment = Template.createFragment()
+	
+	for (var item of listData) {
+		if (item.folder != folder)
+			continue
+			
+		if (fstr.length > 0)
+		if (item.tag.indexOf(fstr) == -1 &&
+			item.title.indexOf(fstr) == -1)
+			continue
 		
 		cnt++;
-		str += `
-<li data-id="${cnt}" id="list-${cnt}" class="list">
-	<div class="video">
-		<label class="check-label">
-			<input type="checkbox" class="video-check" value="${item.line}">
-			<div class="check-box"></div>
-		</label>
-		<a class="thumbnail-area" href="${item.url}"><img src="${item.thumbnail}"></a>
-		<div>
-			<div class="title-area"><a href="${item.url}">${item.title}</a></div>
-			<ul class="tag-area">${tags}</ul>
-			<div class="comment-area">${item.comment}</div>
-		</div>
-		<div class="handle-area">
-			<span id="menuButton" class="handle"><span></span></span>
-		</div>
-		
-		<div class="play-here">
-			<button class="play-button" value="${cnt}">
-				<svg id="play-here"><use xlink:href="sprite.svg#icon-play_here"/></svg>
-			</button>
-		</div>
-	</div>
-</li>`;
-	});
-	$('#video').html(str);
+		var video = videoTmp.clone()
+		$('.list',          video).prop({'data-id':cnt, 'id':`list-${cnt}`})
+		$('.check input',   video).prop({'id':`chk${cnt}`, 'value':item.line})
+		$('.check label',   video).prop({'for':`chk${cnt}`})
+		$('.thumbnail',     video).prop({'href':item.url})
+		$('.thumbnail img', video).prop({'src':item.thumbnail})
+		$('.title a',       video).prop({'href':item.url}).text(item.title)
+		$('.comment',       video).text(item.comment)
+		$('.play-button',   video).prop({'value':cnt})
+		if (item.tag && item.tag.length > 0) {
+			item.tag.split(' ').forEach(e => {
+				var tag = tagTmp.clone()
+				$('span', tag).text(e)
+				$('.tag', video).append(tag)
+			})
+		}
+		fragment.appendChild(video)
+	}
+	$('#video').append(fragment)
 	
 	
 	// マイリスト一覧作成
-	$('#folder-list').html(
-		obj.folder.map((f) => {
-			var name = decodeURI(f);
-			return `<li><a target="_self" href="./mylist.html?list=${name}">${name}</a></li>`;
-		}).join('')
-	);
+	var folderTmp = new Template('#folder-tmp')
+	var folderFrag = Template.createFragment()
+	folderData.forEach(f => {
+		var folder = folderTmp.clone()
+		var name = decodeURI(f);
+		$('a', folder).prop({'href': `${URL_MYLIST}?list=${name}`}).text(name)
+		folderFrag.appendChild(folder)
+	})
+	$('#folder-list').append(folderFrag)
 	
-	// チェックボックスの動作
-	$('.video-check').on('change', function() {
-		$(this).next().toggleClass('check');
-		$(this).parents('.video').toggleClass('video-checked');
-	});
+	
+	// プルダウン作成
+	$('#editor select').append(
+		folderData.map(f => `<option value="${f}">${f}</option>`).join('')
+	)
+	
 	
 	// 連続再生ボタンの動作
 	$('.play-button').on('click', function() {
@@ -128,96 +176,71 @@ function createList(obj, listName, findStr = "") {
 		console.log("button index: " + nowIndex);
 		
 		setLocalStorage({nico_full_screen:false});
-		chrome.tabs.create({url:getListUrl(nowIndex), active:true}, function(tab) {
+		chrome.tabs.create({url:data.getUrl(nowIndex), active:true}, function(tab) {
 			playTabId = tab.id;
 			setLocalStorage({player_tab_id:playTabId});
 		});
 	});
-	
-	console.log("create list time: " + (Date.now() - startTime));
-	
-	// リストが作成されたらぐるぐる非表示
-	hideLoad();
+	console.log(`リスト作成時間: ${Timer.end('list')}ms`);
+	view.hideLoad();
 }
 
 
 $(function() {
-	// ページ表示前にぐるぐる表示
-	showLoad();
+	view.showLoad();
 	
-	params = getUrlParams();
-	if (!params["list"]) {
-		params["list"] = "def";
-	}
-	console.log("look: " + params["list"]);
 	
-	getLocalStorage(["cache", "have_to_reload"])
-	.then((value) => {
-		if (value.cache && !value.have_to_reload) {
-			console.log("load cache");
-			createList(value.cache, params["list"], params["findStr"]);
+	Promise.all([
+		getSyncStorage(['ids', 'reload']),
+		getLocalStorage(['cacheL', 'cacheF']),
+	]).then(values => {
+		
+		ids = values[0].ids
+		if (!ids.book) { // ブックIDが未設定
+			goOption('empty')
+			return
 		}
-		else {
-			console.log("load sheet");
-			loadBook();
+		api = new SheetApi(ids.book)
+		
+		var cacheL = values[1].cacheL
+		var cacheF = values[1].cacheF
+		if (cacheL && cacheF && !values[0].reload) {
+			console.log("キャッシュから読込");
+			createList(cacheL, cacheF)
+		} else {
+			console.log(`ブックから読込`);
+			loadBook()
 		}
-	});
-	
-	// ボタン動作
-	$('#edit').on('click', () => {
-		
-	});
-	$('#reload').on('click', () => {
-		loadBook();
-	});
-	$('#option').on('click', () => {
-		chrome.tabs.create({url:'/option.html', active:true}, null);
-	});
-	
-	// $('#move').on('click', () => {
-	// 	$('.modal').show('500');
-	// });
-	// $('.modal-back').on('click', function() {
-	// 	$('.modal').hide('500');
-	// });
+	})
 	
 	
-	$('#delete').click(() => {
-		
-		var checked_video = getCheckedLines();
-		if (checked_video.length == 0 || !window.confirm(checked_video.length + "件 削除します")) return false;
-		
-		showLoad();
-		console.log("delete line index: " + checked_video);
-		getSyncStorage(["bookId", "sheetIds"])
-		.then((value) => {
-			api.bookId = value.bookId;
-			return api.DeleteLine(value.sheetIds.list, checked_video);
-		})
-		.then((response) => {
-			loadBook();
-		})
-	});
+	
 	
 	// 一番上、一番下ボタン
-	$('.scroll-btn > .top'   ).on('click', () => scroll(0) );
-	$('.scroll-btn > .bottom').on('click', () => scroll($(document).height()) );	
+	$('.scroll-btn > .top'   ).on('click', () => view.scroll(0) );
+	$('.scroll-btn > .bottom').on('click', () => view.scroll($(document).height()) );
 	
+	// ボタン動作
+	$('#edit'  ).on('click', () => $('#content, #editor').toggleClass('edit'));
+	$('#reload').on('click', loadBook)
+	$('#option').on('click', goOption)
+	
+	$('#editor #add'   ).on('click', edit.add)
+	$('#editor #move'  ).on('click', edit.move)
+	$('#editor #copy'  ).on('click', edit.copy)
+	$('#editor #delete').on('click', edit.delete)
 	
 	// ########################連続再生関係########################
 	
 	// 動画終了通知を受け取って次の動画へ移動
-	chrome.runtime.onMessage.addListener(
-		function(request, sender, sendResponse) {
-			if (request.id == "video_ended" && playTabId == sender.tab.id) {
-				var url = getListUrl(++nowIndex);
-				console.log("next url: " + url);
-				if (url) chrome.tabs.update(playTabId, {url: url}, function(tab) {});
-			}
-			return true;
+	chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+		if (request.id == "video_ended" && playTabId == sender.tab.id) {
+			var url = data.getUrl(++nowIndex);
+			console.log("next url: " + url);
+			if (url) chrome.tabs.update(playTabId, {url: url}, tab => {});
 		}
-	);
-	
+		return true;
+	});
 	chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
 		if (tabId == playTabId) {
 			console.log('closed player tab.');
