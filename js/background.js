@@ -1,8 +1,7 @@
-var videoInfo;
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	switch(request.id) {
 	case "add_video":
+		// await化失敗(onMessageがasyncだと失敗するらしい)
 		getSyncStorage("ids")
 		.then(value => {
 			console.log(value);
@@ -17,7 +16,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			sendResponse({result: "success"});
 		})
 		.catch(reason => {
-			
+		
 		});
 		break;
 
@@ -42,10 +41,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 				sendResponse(value);
 			});
 		});
-		break;
-	
-	case "getVideoInfo":
-		videoInfo = request.data;
 		break;
 	}
 	return true;
