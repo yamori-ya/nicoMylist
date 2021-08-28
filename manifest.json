@@ -5,7 +5,7 @@
   "manifest_version": 2,
   
   "browser_action": {
-    "default_title": "nicoMylist",
+    "default_title": "nyMylist",
       "default_icon": {
       },
       "default_popup": "html/pop.html"
