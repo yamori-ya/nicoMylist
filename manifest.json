@@ -1,11 +1,14 @@
 {
-  "name": "nicoMylist",
+  "name": "nyMylist",
   "version": "0.9.0",
   "description": "ニコニコ動画のマイリスト拡張",
   "manifest_version": 2,
   
   "browser_action": {
-    "default_title": "nicoMylist"
+    "default_title": "nicoMylist",
+      "default_icon": {
+      },
+      "default_popup": "html/pop.html"
   },
   
   "content_scripts": [ {
@@ -19,15 +22,8 @@
    } ],
    
   "background": {
-    "scripts": [
-       "js/function.js", "js/background.js", "js/SheetApi.js"
-    ],
+    "scripts": [ "js/function.js", "js/background.js", "js/SheetApi.js" ],
     "persistent": false
-  },
-  "browser_action": {
-    "default_icon": {
-    },
-    "default_popup": "html/pop.html"
   },
    
   "permissions": [

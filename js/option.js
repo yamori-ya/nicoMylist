@@ -74,10 +74,14 @@ $(function() {
 		}
 	}
 	
-	$('#bookId, .tgl-chk').on('change', e => {
+	$('#bookId').on('keyup', e => {
 		$('#save').removeAttr('disabled')
-		if (e.currentTarget.id == 'bookId') changeBookId = true
+		changeBookId = true
 	})
+	$('.tgl-chk').on('change', e => {
+		$('#save').removeAttr('disabled')
+	})
+	
 	
 	$('#create').on('click', addBook)
 	

@@ -7,10 +7,10 @@ var params = getUrlParams();
 
 const view = {
 	showLoad: function() {
-		$('#load-layer, #loader').show()
+		$('#load-layer').show()
 	},
 	hideLoad: function() {
-		$('#load-layer, #loader').hide()
+		$('#load-layer').hide()
 	},
 	scroll: function(height) {
 		$('body,html').animate({ scrollTop: height }, 300)
@@ -45,11 +45,14 @@ const edit = {
 		}
 	},
 	move: function() {
+		let checked = data.getChecked()
+		let dist = $('#editor select').val()
+		if (checked.length == 0 || !window.confirm(`${params['list']} から ${dist} へ ${checked.length}件移動します`))
+			return false
+		
 		view.showLoad()
 		Timer.start('move')
-		var checked = data.getChecked()
-		var val = $('#editor select').val()
-		var m = checked.map(i => { return {row: i-1, col: 0, val: val} })
+		let m = checked.map(i => { return {row: i-1, col: 0, val: dist} })
 		
 		api.Update(ids.list, m).then(response => {
 			console.log(`移動にかかった時間: ${Timer.end('move')}ms`)
@@ -153,11 +156,11 @@ function createList(listData, folderData) {
 	
 	
 	// マイリスト一覧作成
-	var folderTmp = new Template('#folder-tmp')
-	var folderFrag = Template.createFragment()
+	let folderTmp = new Template('#folder-tmp')
+	let folderFrag = Template.createFragment()
 	folderData.forEach(f => {
-		var folder = folderTmp.clone()
-		var name = decodeURI(f);
+		let folder = folderTmp.clone()
+		let name = decodeURI(f);
 		$('a', folder).prop({'href': `${URL_MYLIST}?list=${name}`}).text(name)
 		folderFrag.appendChild(folder)
 	})
@@ -183,11 +186,13 @@ function createList(listData, folderData) {
 	});
 	console.log(`リスト作成時間: ${Timer.end('list')}ms`);
 	view.hideLoad();
+	$('#content').height($('#mylist').height());
 }
 
 
 $(function() {
 	view.showLoad();
+	$('.search input[name="list"]').val(params['list'])
 	
 	
 	Promise.all([
@@ -196,7 +201,7 @@ $(function() {
 	]).then(values => {
 		
 		ids = values[0].ids
-		if (!ids.book) { // ブックIDが未設定
+		if (!ids || !ids.book) { // ブックIDが未設定
 			goOption('empty')
 			return
 		}
@@ -212,7 +217,6 @@ $(function() {
 			loadBook()
 		}
 	})
-	
 	
 	
 	

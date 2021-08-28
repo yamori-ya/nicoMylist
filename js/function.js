@@ -7,21 +7,19 @@ const URL_MYLIST = '/html/mylist.html';
  */
 function goOption(status = '') {
 	if (status && status.length > 0) {
-		location.href = URL_OPTION + '?status=' + status
+		location.href = URL_OPTION + '?status=' + status;
 	} else {
-		location.href = URL_OPTION
+		location.href = URL_OPTION;
 	}
 }
 /**
  * urlからパラメータ取得
  */
 function getUrlParams(debug = false) {
-	var params = [];
-	if (location.search != "") {
-		for (var one of location.search.substring(1).split("&")) {
-			let p = one.split("=");
-			params[p[0]] = decodeURI(p[1]);
-		}
+	let params = [];
+	let url = new URL(location.href);
+	for (let [key, value] of url.searchParams) {
+		params[key] = value;
 	}
 	if (debug) console.log(params);
 	return params;
@@ -86,7 +84,7 @@ class Timer {
 		timerMap[name] = Date.now()
 	}
 	static end(name) {
-		var t = Date.now() - timerMap[name]
+		let t = Date.now() - timerMap[name]
 		delete timerMap[name]
 		return t
 	}
