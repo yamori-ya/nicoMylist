@@ -2,9 +2,9 @@
   "name": "nyMylist",
   "version": "0.9.1",
   "description": "ニコニコ動画、Youtubeのマイリスト拡張",
-  "manifest_version": 2,
+  "manifest_version": 3,
   
-  "browser_action": {
+  "action": {
     "default_title": "nyMylist",
       "default_icon": {
       },
@@ -12,7 +12,7 @@
   },
   
   "content_scripts": [ {
-      "js": [ "js/jquery-3.3.1.min.js", "js/SheetApi.js", "js/function.js", "js/content.js" ],
+      "js": [ "js/SheetApi.js", "js/function.js", "js/content.js" ],
       "css": [ "css/content.css" ],
       "matches": [ 
         "http://*.nicovideo.jp/watch/*",
@@ -22,8 +22,7 @@
    } ],
    
   "background": {
-    "scripts": [ "js/function.js", "js/background.js", "js/SheetApi.js" ],
-    "persistent": false
+    "service_worker": "event.js"
   },
    
   "permissions": [
