@@ -1,7 +1,7 @@
 {
   "name": "nyMylist",
-  "version": "0.9.0",
-  "description": "ニコニコ動画のマイリスト拡張",
+  "version": "0.9.1",
+  "description": "ニコニコ動画、Youtubeのマイリスト拡張",
   "manifest_version": 2,
   
   "browser_action": {
