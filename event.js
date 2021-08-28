@@ -1,3 +1,6 @@
+importScripts('js/function.js');
+importScripts('js/SheetApi.js');
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	switch(request.id) {
 	case "add_video":
