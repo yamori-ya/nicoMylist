@@ -15,18 +15,18 @@ body {
 #show-mylist {
 	text-align: right;
 }
-#show-mylist button {
+#show-mylist a {
+	display: inline-block;
+	padding: 3px;
+	margin-bottom: 5px;
+	text-decoration: none;
 	white-space: nowrap;
-	outline: none;
 	color: #53a8ec;
 	border: 1px solid #53a8ec;
 	border-radius: 3px;
-	background: none;
-	cursor: pointer;
-	height: 30px;
 	transition: 100ms;
 }
-#show-mylist button:hover {
+#show-mylist a:hover {
 	color: #ffffff;
 	background: #53a8ec;
 }
@@ -36,82 +36,76 @@ body {
 	font-weight: 550;
 }
 #mylist {
-	display: flex;
-}
-.buttons {
 	margin: 0 0 0 auto;
+	float: right;
+}
+#mylist > div {
+	margin-top: 4px;
+	text-align: right;
+}
+textarea {
+	width: 220px;
+	height: 40px;
+}
+#action > * {
+	width: 56px;
+	height: 26px;
 }
 
-.but_frame {
-	height: 24.9px;
-	width: 30px;
-	/* fill: #373737; */
-}
-.but_frame path {
-	transition: 0.3s;
-}
-.added {
-	cursor: default;
-	fill: #cccccc;
-}
-.free {
-	fill: #373737;
-}
-.free:hover {
-	fill: #e6485c;
-}
-.mylist-button {
-	padding: 0;
-	margin: 3px;
-	background: none;
-	border: 0;
-	cursor: pointer;
-	outline: none;
+#result.busy::after {
+	text-align: center;
+	content: url(../loda.gif);
 }
 
-#modal {
-  display: none;
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
+#result.done::after,
+#result.err::after {
+	text-align: center;
+	line-height: 25px;
+	font-size: small;
 }
-#modal-back {
-  background: rgba(0,0,0,0.8);
-  position: absolute;
-  height: 100vh;
-  width: 100%;
+#result.done::after {
+	content: '完了';
 }
-#modal-content {
-  position: absolute;
-  padding: 40px;
-  background: #fff;
-  transform: translate(-50%,-50%);
-  width: 60%;
-  top: 150px;
+#result.err::after {
+	font-weight: bold;
+	color: red;
+	content: '失敗';
 }
+
+
 </style>
 </head>
 <body>
 	
-	
 	<div id="show-mylist">
-		<button>マイリストを表示</button>
+		<a href="/html/mylist.html" target="_blank">マイリストを表示</a>
 	</div>
 	
 	
 	<!-- 開いている動画 -->
 	<div id="video-info">
 		
-		<div id="title">
-			
-		</div>
+		<div id="title"></div>
 		
 		<div id="mylist">
-			<span class="buttons">
-				<select id="folder"></select><button id="add">←追加</button>
-			</span>
+			
+			<div class="folder">
+				<span>フォルダ</span>
+				<select id="folder"></select>
+			</div>
+			<div class="tag">
+				<span>タグ</span>
+				<textarea id="tag"></textarea>
+			</div>
+			<div class="comment">
+				<span>コメント</span>
+				<textarea id="comment"></textarea>
+			</div>
+			
+			<div id="action">
+				<button id="add">追加</button>
+				<span id="result"></span>
+			</div>
 		</div>
 	</div>
 	

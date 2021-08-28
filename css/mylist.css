@@ -18,11 +18,18 @@ header#header-fixed {
 #editor {
 	display: none;
 }
+#editor > div {
+	text-align: center;
+}
 #editor.edit {
 	display: block;
 	position: fixed;
-	top: 60px;
-	left: 20px;
+	width: 100%;
+	top: 37px;
+	left: 0;
+	background: gray;
+	padding: 10px 0;
+	z-index: 99;
 }
 #content {
 	position: relative;
@@ -38,8 +45,12 @@ header#header-fixed {
 #content.edit #mylist .handle {
 	visibility: visible;
 }
+#content.edit #folder {
+	top: 185px;
+}
 #folder {
-	position: fixed;
+	position: sticky;
+	top: 85px;
 	width: 285px;
 	min-height: 50vh;
 	max-height: 60vh;
@@ -57,13 +68,7 @@ header#header-fixed {
 
 
 /* ######################## ヘッダー ######################## */
-.menu {
-	float: right;
-	list-style: none;
-	display: flex;
-	margin: 0;
-}
-.menu svg {
+#header-fixed svg {
 	margin: 3px;
 	cursor: pointer;
 	height: 28px;
@@ -71,10 +76,16 @@ header#header-fixed {
 	fill: #eaeaea;
 	transition: 0.3s;
 }
-.menu svg:hover {
+#header-fixed svg:hover {
 	fill: #00b0ff;
 }
 
+.menu {
+	float: right;
+	list-style: none;
+	display: flex;
+	margin: 0;
+}
 .search {
 	position: absolute;
 	top: 1px;
@@ -84,6 +95,7 @@ header#header-fixed {
 .search input.text {
 	height: 28px;
 	font-size: 1.5em;
+	float: left;
 }
 /* ######################## ヘッダー ######################## */
 
@@ -231,7 +243,7 @@ header#header-fixed {
 .play-here {
 	position: relative;
 	left: -80px;
-	margin-left: -36px; /*ボタンの幅*/
+	margin-left: -54px;
 	opacity: 0;
 	transition: 0.2s;
 }
@@ -239,25 +251,19 @@ header#header-fixed {
 	opacity: 1;
 }
 .play-here button {
-	pointer-events: none;
-	border: none;
-	outline: none;
-	background: none;
-	padding: 0;
-	height: 36px;
-	width: 36px;
+	width: 102px;
+	cursor: pointer;
 	transition: 0.3s;
-}
-.play-here button:hover {
-	transform: scale(1.35);
 }
 .play-here svg {
-	pointer-events: auto;
-	cursor: pointer;
-	height: 36px;
-	width: 36px;
+	float: left;
+	height: 28px;
+	width: 28px;
 	fill: #6a6a6a;
-	transition: 0.3s;
+}
+.play-here span {
+	float: right;
+	margin-top: 5px;
 }
 
 /* ######################## リスト ######################## */
@@ -343,21 +349,9 @@ header#header-fixed {
 	height: 100%;
 	background-color: rgba(0, 0, 0, 0.3);
 }
-#loader {
-	display: none;
-	position: fixed;
-	top: 0px; right: 0px; bottom: 0px; left: 0px;
-	margin: auto;
-	z-index: 102;
-	width: 30px; /*ローディングアイコンの横サイズ*/
-	height: 30px; /*ローディングアイコンの縦サイズ*/
-	border-radius: 50%;	/*CSS3で円を書く*/
-	border: 8px solid #fff;	/*円に○の白枠をつける*/
-	border-right-color: transparent; /*円の右にC状の空きをつける*/
-	animation: spin 1s linear infinite; /*1秒毎にくるくる回転するアニメーション*/
-}
-@keyframes spin {
-	0% { transform: rotate(0deg);	 opacity: 0.2; } /*0%の時は20％の透明度*/
-	50%	{ transform: rotate(180deg); opacity: 1.0; } /*50%の時は透明度なし*/
-	100%	 { transform: rotate(360deg); opacity: 0.2; } /*100%の時に20％の透明度に戻る*/
+#load-layer img {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%) scale(1.5);
 }
