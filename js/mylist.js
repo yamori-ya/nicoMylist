@@ -60,13 +60,7 @@ const edit = {
 		})
 	},
 	copy: function() {
-		alert('まだないんだ、すまない')
-		// api = new SheetApi('')
-		// api.CreateBook().then(ids => {
-		// 	console.log(ids.book);
-		// 	console.log(ids.info);
-		// 	console.log(ids.list);
-		// })
+		alert('作成中')
 	},
 	delete: function() {
 		var checked = data.getChecked()

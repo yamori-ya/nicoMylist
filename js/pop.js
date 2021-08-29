@@ -27,7 +27,7 @@ window.onload = async function() {
 		$('#video-info').hide();
 		
 		if (!play) { // ビデオページでなく、連続再生中でもない場合即マイリスト表示
-			chrome.tabs.create({url: URL_MYLIST + '?list=歌'});
+			chrome.tabs.create({url: URL_MYLIST});
 		}
 		return;
 	}
