@@ -130,4 +130,19 @@ button[disabled] {
 	color: var(--bgcolor);
 }
 
-
+#load-layer {
+	display: none;
+	position: fixed;
+	z-index: 101;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.3);
+}
+#load-layer img {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%) scale(1.5);
+}
