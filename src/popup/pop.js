@@ -18,8 +18,15 @@ window.onload = async function() {
 	})
 	
 	
+	
+	let getActiveTab = new Promise((resolve, reject) => {
+		chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+			resolve(tabs[0])
+		})
+	})
+	
 	// 現ウインドアクティブダブへ命令
-	let [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+	let tab = await getActiveTab
 	let nico = tab.url.match(/www\.nicovideo\.jp\/watch\/.+/);
 	let yout = tab.url.match(/www\.youtube\.com\/watch\?v=.+/);
 	

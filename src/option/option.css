@@ -1,0 +1,27 @@
+:root {
+	--main-bg: #F4F4F4;
+	--blue: #2196f3;
+	--bule-hv: #42a5f5;
+}
+* {
+	font-family: "游ゴシック体", "Yu Gothic", YuGothic, sans-serif;
+}
+html {
+	background: var(--main-bg);
+}
+#main {
+	width: 600px;
+	margin: 60px auto 0 auto;
+}
+.uline {
+	border-bottom: 1px dashed;
+}
+
+#toast-container {
+	position: absolute;
+	top: 80px;
+	left: 50%;
+	width: fit-content;
+	transform: translateX(-50%);
+}
+

@@ -1,0 +1,46 @@
+{
+  "name": "nyMylist",
+  "version": "0.9.1.1",
+  "description": "ニコニコ動画、Youtubeのマイリスト拡張",
+  "manifest_version": 3,
+
+  "action": {
+    "default_title": "nyMylist",
+    "default_icon": {
+      "19": "static/img/icon19.png",
+      "38": "static/img/icon38.png"
+    },
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "16": "static/img/icon16.png",
+    "48": "static/img/icon48.png",
+    "128": "static/img/icon128.png"
+  },
+
+  "content_scripts": [{
+    "js": ["static/js/content.js"],
+    "matches": [
+      "http://*.nicovideo.jp/watch/*",
+      "https://*.nicovideo.jp/watch/*",
+      "https://www.youtube.com/watch*"
+    ]
+  }],
+
+  "options_ui": {
+    "page": "option.html",
+    "open_in_tab": true
+  },
+  "background": {
+    "service_worker": "event.js"
+  },
+
+  "permissions": [
+    "identity",
+    "storage",
+    "unlimitedStorage",
+    "tabs"
+  ],
+
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvD0SzFVEHjrl6KQ3+j1auSvqpZG73Oe0fiBhMD6gRhLRcNkKomxoPQAQfteoHC0iMcxyluh726rxD47QI0dG1eYuveZODZrsYGATITmJ634L3IPeIp5VBEUeIcqhUGmjOg17loRKOmMLr7fAoX10h5DfiPnVRrRT7E5AIvyxOnBbm8SGDnK2uz5uO7pmjFpTgsJ3MhQrOOJwLL8x19QWNV3xAjiF1GrpC0iwOJnLPDlesZEuvzRQiYhRCuWxR0zIIlKWJmeGCVW2ytPrR6rAPgI6v/HJcm9k09C9VC7Nrj+LzqNe4IDhGypM9S/aerBKlQi10VoEQ4o2P9x9Ps4W0wIDAQAB"
+}

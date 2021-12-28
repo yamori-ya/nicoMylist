@@ -1,0 +1,381 @@
+$white: #f4f4f4;
+$blue: #6fbeff;
+$red: #ef2f21;
+$red-hov: #ff5d5d;
+
+$shadow1: 0 2px 2px 0 rgb(0 0 0 / 14%), 0 3px 1px -2px rgb(0 0 0 / 12%), 0 1px 5px 0 rgb(0 0 0 / 20%);
+$shadow2: 0 4px 5px 0 rgb(0 0 0 / 14%), 0 1px 10px 0 rgb(0 0 0 / 12%), 0 2px 4px -1px rgb(0 0 0 / 30%);
+$shadow3: 0 8px 17px 2px rgb(0 0 0 / 14%), 0 3px 14px 2px rgb(0 0 0 / 12%), 0 5px 5px -3px rgb(0 0 0 / 20%);
+$shadow4: 0 16px 24px 2px rgb(0 0 0 / 14%), 0 6px 30px 5px rgb(0 0 0 / 12%), 0 8px 10px -7px rgb(0 0 0 / 20%);
+$shadow5: 0 24px 38px 3px rgb(0 0 0 / 14%), 0 9px 46px 8px rgb(0 0 0 / 12%), 0 11px 15px -7px rgb(0 0 0 / 20%);
+
+html, body{
+	margin: 0;
+	padding: 0;
+	width:100%;
+	height:100%;
+	background: $white;
+	overflow: hidden;
+}
+::-webkit-scrollbar-track {
+	background: lightgray;
+}
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+::-webkit-scrollbar-thumb {
+	background: gray;
+	border-radius: 10px;
+}
+.btn.separator {
+	background-color: gray!important;
+	margin: 0 20px!important;
+	padding: 0px 1px!important;
+	cursor: auto!important;
+}
+.zindex100 {
+	z-index: 100;
+}
+
+input.checkbox {
+	display: none;
+	+ label {
+		display: grid;
+		height: 30px;
+		width: 30px;
+		cursor: pointer;
+		position: relative;
+	}
+	+ label::before {
+		content: '';
+		border: 2.5px solid #898989;
+		border-radius: 4px;
+	}
+	+ label::after {
+		content: '';
+		position: absolute;
+		width: 16px;
+		height: 10px;
+		top: 7px;
+		left: 7px;
+		border-left: 3.5px solid #fff;
+		border-bottom: 3.5px solid #fff;
+		transform: rotate(-45deg);
+		opacity: 0;
+	}
+	&:checked {
+		+ label::before {
+			background: #0080ff;
+			border-color: #0080ff;
+		}
+		+ label::after {
+			opacity: 1;
+		}
+	}
+}
+
+nav {
+	z-index: 10;
+	position: relative;
+	top: 0;
+	height: 50px;
+	background-color: #444; 
+}
+#main {
+	position: absolute;
+	top: 50px;
+	width: 100%;
+	height: calc(100vh - 50px);
+	overflow: auto;
+	display: flex;
+}
+#folder {
+	z-index: 10;
+	position: absolute;
+	top: calc(50px + 20px);
+	right: 68%;
+	width: 28%;
+	min-width: 260px;
+	max-width: 400px;
+}
+
+
+nav {
+	* {max-height: 48px!important;}
+	.menu {
+		.btn {
+			top: -9px;
+			margin: 0 5px;
+			padding: 0 8px;
+			background-color: #e0e0e0;
+			i { margin-right: 5px; }
+			&:hover { background-color: $blue; }
+		}
+		.btn.save {
+			color: #fff;
+			background-color: $red;
+			&:hover { background-color: $red-hov; }
+		}
+	}
+	.search {
+		position: absolute;
+		top: 1px;
+		left: 50%;
+		transform: translateX(-50%);
+		form {
+			display: flex;
+			height: 48px;
+			input[type="text"] {
+				height: 36px;
+				margin: auto 0;
+				font-size: 1.5em;
+			}
+			label {
+				width: 42px;
+				height: 42px;
+				margin: auto 0;
+			}
+			i.big {
+				font-size: 42px!important;
+				color: #e0e0e0!important;
+				transition: 0.3s!important;
+				line-height: 42px!important;
+				user-select: none;
+				cursor: pointer;
+				&:hover {
+					color: $blue!important;
+				}
+			}
+		}
+	}
+}
+
+#folder {
+	.header {
+		display: flex;
+		height: 50px;
+		justify-content: flex-end;
+		background: #b2dfdb;
+		> div {
+			margin: auto 10px auto 0;
+		}
+	}
+	.list {
+		overflow: auto;
+		max-height: 60vh;
+	}
+}
+.folder-item {
+	display: flex;
+	height: 50px;
+	background: $white;
+	border-bottom: solid .1px #bfbfbf;
+	
+	.link {
+		flex: 1;
+		display: block;
+		padding: 10px 20px;
+		font-size: 1rem;
+		line-height: 2rem;
+	}
+	i {color: #000;}
+	
+	.trash,
+	.handle {
+		width: 50px;
+		display: none;
+		justify-content: center;
+		align-items: center;
+		transition: .15s;
+	}
+	&.edit .trash,
+	&.edit .handle {
+		display: flex;
+	}
+	&.active {
+		background: $blue;
+		color: $white;
+		i {color: $white;}
+		.trash {display: none;}
+	}
+	
+	.trash {
+		cursor: pointer;
+		&:hover {
+			box-shadow: $shadow2;
+			background: $red-hov;
+		}
+		i { font-size: 28px; }
+	}
+	.handle {
+		cursor: n-resize;
+		&:hover {
+			box-shadow: $shadow2;
+		}
+		i { font-size: 40px; }
+	}
+}
+
+
+
+.main-left {
+	width: 35%;
+	flex: none;
+}
+.main-right {
+	.editor {
+		position: fixed;
+		z-index: 9;
+		display: flex;
+		margin: 0;
+		background-color: lightgray; 
+		border-bottom-left-radius: 10px;
+		border-bottom-right-radius: 10px;
+		box-shadow: $shadow3;
+		transition: .2s;
+		transform: translateY(-100px);
+		&.edit {transform: translateY(0px);}
+		
+		.input-field {
+			width: 250px;
+		}
+		.btns {
+			margin-top: 20px;
+			a { margin: 0 10px; }
+		}
+		.all-select {
+			width: 80px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			flex-direction: column;
+		}
+	}
+	
+	.list {
+		transition: .2s;
+		&.edit {transform: translateY(84px);}
+	}
+}
+.video {
+	position: relative;
+	top: 10px;
+	min-height: 120px;
+	width: 850px;
+	display: flex;
+	background-color: #F4F4F4;
+	margin-left: 0;
+	border-bottom: solid .1px gray;
+}
+.check {
+	width: 70px;
+	padding: 10px;
+	opacity: 0;
+	visibility: hidden;
+	> label {
+		height: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		cursor: pointer;
+		transition: .2s;
+		&:hover {background: #c7b7f9;}
+	}
+}
+.edit .check {
+	opacity: 1;
+	visibility: visible;
+}
+.thumbnail {
+	width: 140px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.info {
+	width: 580px;
+	
+	.title {
+		width: 100%;
+		font-size: large;
+		padding: 0.75rem;
+		a:hover {text-decoration-line: underline;}
+	}
+	.tag {
+		width: 100%;
+		.chip {
+			height: 22px;
+			line-height: 22px;
+			margin-right: 2px;
+			background-color:#c9c9c9;
+			a {
+				color: rgba(0,0,0,0.6);
+				&:hover { text-decoration-line: underline; }
+			}
+		}
+	}
+	.comment {
+		width: 100%;
+		p {
+			border: #C9CFCF solid 2px;
+			background: #F9FFFF;
+			margin-top: 0.5rem;
+			margin-bottom: 0.75rem;
+			font-size: medium;
+			min-height: 3em;
+			padding: 0 5px;
+		}
+	}
+}
+.handle-wrapper {
+	width: 70px;
+	display: grid;
+	height: unset;
+	justify-content: center;
+	align-items: center;
+	i {
+		justify-content: center;
+		align-items: center;
+		font-size: 40px;
+		height: 50px;
+		width: 50px;
+		transition: .2s;
+		&.handle {
+			cursor: n-resize;
+			display: none;
+		}
+		&.dropdown-trigger {
+			cursor: pointer;
+			display: grid;
+		}
+		&:hover {
+			box-shadow: $shadow1;
+		}
+	}
+	.video.edit & i {
+		&.handle { display: grid; }
+		&.dropdown-trigger { display: none; }
+	}
+}
+
+
+
+/* ######################## リスト ######################## */
+
+
+
+.scroll-btn {
+	z-index: 10;
+	position: fixed;
+	bottom: 25px;
+	right: 35px;
+}
+.scroll-btn a {
+	display: block;
+	margin-bottom: 5px;
+	background: rgba(0,0,0,0.4);
+}
+.scroll-btn a:hover {
+	background: rgba(0,0,0,0.2);
+}
