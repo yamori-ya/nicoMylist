@@ -1,0 +1,68 @@
+#app {
+    min-width: 500px;
+    max-width: 800px;
+}
+
+.video-info {
+    display: flex;
+    flex-direction: column;
+}
+.video-info > * {
+    display: flex;
+    justify-content: flex-end;
+    margin: 10px 10px 0 10px;
+}
+
+
+.title span {
+    font-size: x-large;
+}
+.folder a {
+    margin: 5px 10px 0 0;
+}
+.input-field {
+    margin-top: 0!important;
+    margin-bottom: 0!important;
+    select, input, textarea {
+        font-size: 14px!important;
+    }
+    .tag &, .comment & {
+        width: 400px;
+    }
+}
+
+
+.f-sel {
+    position: relative;
+    width: 200px;
+}
+.f-sel select {
+    cursor: pointer;
+    background-color: transparent;
+    padding-left: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    transition: box-shadow .3s, border .3s;
+    border-bottom: 1px solid #0000004d;
+}
+.f-sel select:focus {
+    outline: none;
+    border-bottom: 1px solid #26a69a;
+    box-shadow: 0 1px 0 0 #26a69a;
+}
+.f-sel label {
+    color: rgba(0, 0, 0, 0.5);
+    font-size: 1rem;
+    position: absolute;
+    pointer-events: none;
+    left: 0;
+    top: 10px;
+    transition: 0.2s;
+}
+.f-sel select:focus ~ label,
+.f-sel select:valid ~ label {
+    color: #26a69a;
+    transform-origin: 0 0;
+    transform: translateY(-16px) scale(0.8);
+}

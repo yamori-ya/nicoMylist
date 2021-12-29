@@ -40,7 +40,7 @@ export default class Debug extends React.Component {
 		uploadJson(params).then(json => {
 			let files = this.state.files.concat()
 			files[index].content = ''
-			storage.setSync({reload:true});
+			_storage.setSync({reload:true});
 			this.setState({...this.state, files})
 		})
 		
