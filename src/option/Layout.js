@@ -28,7 +28,7 @@ class Layout extends React.Component {
 		
 		_storage.getSync("nico_setting")
 		.then(value => {
-			if ('nico_setting' in value) {
+			if (value.nico_setting) {
 				this.setState({...this.state,
 					['nico-scroll']: value.nico_setting.scroll,
 					['nico-click2play']:value.nico_setting.click2play, 

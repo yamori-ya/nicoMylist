@@ -10,8 +10,8 @@ const UPDATE_ID = '';
 
 // reloadを考慮したDataの取得
 export async function getData() {
-	let value = await _storage.getSync('reload')
-	let reload = ('reload' in value) ? value.reload : true;
+	let reload = await _storage.getSync('reload');
+	reload = reload == void(0) ? true : reload
 	
 	if (!reload) {
 		const cache = await _storage.getLocal(['f_order','folder','video']);
@@ -25,7 +25,7 @@ export async function getData() {
 }
 // 
 export async function saveData(data) {
-	let id = (await _storage.getSync(DATA_ID))[DATA_ID];
+	let id = await _storage.getSync(DATA_ID);
 	if (!id) _url.option(400); // 保存前にSyncStorageからIDを消した
 	
 	let json = data.getAllJson()
@@ -116,7 +116,7 @@ function setCache(json) {
  * すべてのデータが保存されてるjsonをドライブから取得する
  */
 async function getDataJson() {
-	let id = (await _storage.getSync(DATA_ID))[DATA_ID];
+	let id = await _storage.getSync(DATA_ID);
 	if (id) {
 		let json = await downloadJson(id);
 		if (!json.error) {
@@ -199,13 +199,31 @@ export const _storage = {
 	/** local storage から値を取得 */
 	getLocal: (getNames) => {
 		return new Promise((resolve, reject) => {
-			chrome.storage.local.get(getNames, values => resolve(values));
+			chrome.storage.local.get(getNames, values => {
+				let keys = [].concat(getNames);
+				if (keys.length == 1) {
+					resolve(values[keys[0]])
+				} else {
+					let ret = {}
+					keys.forEach(k => ret[k] = values[k])
+					resolve(ret)
+				}
+			});
 		});
 	},
 	/** sync storage から値を取得 */
 	getSync: (getNames) => {
 		return new Promise((resolve, reject) => {
-			chrome.storage.sync.get(getNames, values => resolve(values));
+			chrome.storage.sync.get(getNames, values => {
+				let keys = [].concat(getNames);
+				if (keys.length == 1) {
+					resolve(values[keys[0]])
+				} else {
+					let ret = {}
+					keys.forEach(k => ret[k] = values[k])
+					resolve(ret)
+				}
+			});
 		});
 	},
 	/** local strage へ値を保存 */

@@ -36,12 +36,12 @@ class Layout extends React.Component {
 				return false;
 			}
 
-			this.data_id = (await _storage.getSync('data_id')).data_id
+			this.data_id = await _storage.getSync('data_id')
 			if (!this.data_id) {
 				chrome.tabs.create({url: '/mylist.html'});
 				return false;
 			}
-			const folder = (await _storage.getLocal('folder')).folder
+			const folder = await _storage.getLocal('folder')
 			if (folder) {
 				this.setState({folder, dest: folder[0].id})
 			}
@@ -123,9 +123,11 @@ class Layout extends React.Component {
 			};
 			// await _storage.setSync({reload: true})
 			let arg = {id: this.data_id, json: {video: data}}
-			console.log(arg);
 			let res = await uploadJson(arg)
-			console.log(res);
+			
+			let tmp_data = _storage.getLocal('tmp_data');
+			
+			
 		})
 	}
 	
