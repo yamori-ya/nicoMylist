@@ -14,10 +14,13 @@ export async function getData() {
 	reload = reload == void(0) ? true : reload
 	
 	if (!reload) {
+		console.log('キャッシュ読み込み');
 		const cache = await _storage.getLocal(['f_order','folder','video']);
 		return Promise.resolve(new Data(cache));
 	}
 	else {
+		console.log('ドライブ読み込み');
+		
 		const json = await getDataJson()
 		await _storage.setSync({reload:false});
 		return Promise.resolve(new Data(json));

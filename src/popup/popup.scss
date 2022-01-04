@@ -1,7 +1,20 @@
+$active: #26a69a;
+
 #app {
     min-width: 500px;
     max-width: 800px;
 }
+
+#toast-container {
+    position: absolute;
+    top: 40px;
+    width: fit-content;
+    .toast {
+        width: fit-content;
+        margin: 0 auto;
+    }
+}
+
 
 .video-info {
     display: flex;
@@ -48,8 +61,8 @@
 }
 .f-sel select:focus {
     outline: none;
-    border-bottom: 1px solid #26a69a;
-    box-shadow: 0 1px 0 0 #26a69a;
+    border-bottom: 1px solid $active;
+    box-shadow: 0 1px 0 0 $active;
 }
 .f-sel label {
     color: rgba(0, 0, 0, 0.5);
@@ -62,7 +75,7 @@
 }
 .f-sel select:focus ~ label,
 .f-sel select:valid ~ label {
-    color: #26a69a;
+    color: $active;
     transform-origin: 0 0;
     transform: translateY(-16px) scale(0.8);
 }

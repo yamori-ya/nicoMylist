@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 import "./popup.scss";
-import { _storage, _url, uploadJson } from "./../function.js";
+import { Preloader, _storage, _url, uploadJson } from "./../function.js";
 
 class Layout extends React.Component {
 	constructor() {
@@ -14,7 +14,7 @@ class Layout extends React.Component {
 			play: false,
 			videoInfo: {
 				url: '',
-				title: '',
+				title: 'タイトル',
 				thumbnail: '',
 				tag: '',
 				length: '',
@@ -36,8 +36,8 @@ class Layout extends React.Component {
 				return false;
 			}
 
-			this.data_id = await _storage.getSync('data_id')
-			if (!this.data_id) {
+			const data_id = await _storage.getSync('data_id')
+			if (!data_id) {
 				chrome.tabs.create({url: '/mylist.html'});
 				return false;
 			}
@@ -112,23 +112,34 @@ class Layout extends React.Component {
 		}
 		init();
 	}
-
-	onAdd = () => {
-		this.setState({preload: true}, async () => {
-
-			let tmp_id = `tmp_${Date.now()}`;
-			let data = {
-				folder_id: this.state.dest,
-				videoInfo: this.state.videoInfo
-			};
-			// await _storage.setSync({reload: true})
-			let arg = {id: this.data_id, json: {video: data}}
-			let res = await uploadJson(arg)
-			
-			let tmp_data = _storage.getLocal('tmp_data');
-			
-			
-		})
+	
+	onAdd = async () => {
+		const setState = (state) => {
+			return new Promise((resolve, reject) => {
+				this.setState(state, resolve())
+			});
+		}
+		await setState({preload: true});
+		
+		let data = {
+			folder_id: this.state.dest,
+			videoInfo: this.state.videoInfo
+		};
+		let val = await _storage.getLocal(['tmp_data_id', 'tmp_data']);
+		let tmp_data = (val.tmp_data || []).concat(data);
+		let tmp_data_id = val.tmp_data_id;
+		
+		// ストレージとドライブ両方に書き込み
+		await _storage.setLocal({tmp_data})
+		if (tmp_data_id) {
+			await uploadJson({id: tmp_data_id, json: {tmp_data}})
+		} else {
+			let res = await uploadJson({filename: 'tmp_data.json', json: {tmp_data}})
+			await _storage.setLocal({tmp_data_id: res.id})
+		}
+		
+		await setState({preload: false});
+		M.toast({html: '保存しました!', displayLength: 3000})
 	}
 	
 	
@@ -141,15 +152,20 @@ class Layout extends React.Component {
 			this.setState({dest: e.target.value})
 		}
 		const onTag = (e) => {
-			this.setState({...videoInfo, videoInfo:{tag: e.target.value}})
+			let videoInfo = this.state.videoInfo;
+			videoInfo.tag = e.target.value;
+			this.setState({videoInfo});
 		}
 		const onComment = (e) => {
-			this.setState({...videoInfo, videoInfo:{comment: e.target.value}})
+			let videoInfo = this.state.videoInfo;
+			videoInfo.comment = e.target.value;
+			this.setState({videoInfo});
 		}
 
 		const v = this.state.videoInfo;
 		return (
 			<div class="main">
+				<Preloader active={this.state.preload} />
 				<div class="video-info">
 						<div class="open-mylist">
 							<a class="btn waves-effect waves-light" onClick={onOpen}>マイリストを表示</a>

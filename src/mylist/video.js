@@ -40,24 +40,30 @@ export default class Video extends React.Component {
 		return (
 			<div id="main">
 				<div class="main-left"></div>
-				<div class="main-right">
-					<Editor
-						edit={edit}
-						folder={folder}
-						current={this.props.current}
-						changeData={this.props.changeData} />
-					
-					<SortableList useDragHandle
-						edit={edit}
-						onSortEnd={this.onSortEnd}
-						lockAxis='y'
-						helperClass="video zindex100 z-depth-2">
+				{!video ? 
+					<div class="main-right">
+						<h3>マイリストが存在しません</h3>
+					</div>
+					:
+					<div class="main-right">
+						<Editor
+							edit={edit}
+							folder={folder}
+							current={this.props.current}
+							changeData={this.props.changeData} />
 						
-						{video.map((v, i) => 
-							<SortableItem key={i} id={'item-'+i} index={i} video={v} edit={edit}/>
-						)}
-					</SortableList>
+						<SortableList useDragHandle
+							edit={edit}
+							onSortEnd={this.onSortEnd}
+							lockAxis='y'
+							helperClass="video zindex100 z-depth-2">
+							
+							{video.map((v, i) => 
+								<SortableItem key={i} id={'item-'+i} index={i} video={v} edit={edit}/>
+							)}
+						</SortableList>
 				</div>
+				}
 			</div>
 		);
 	}
